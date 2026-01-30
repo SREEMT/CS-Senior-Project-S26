@@ -1,0 +1,11 @@
+|-- api/
+|
+|-- pages/
+|
+|-- hooks/
+|
+|-- context/
+|
+|-- styles/
+|-- App.jsx
+|-- main.jsx

@@ -1,0 +1,17 @@
+|--controllers/
+|
+|-- models/
+|
+|-- views/
+|
+|-- routes/
+|
+|-- services/
+|
+|-- middleware/
+|
+|-- utils/
+|       *db goes here
+|
+|-- app.js
+|-- index.js
