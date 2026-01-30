@@ -1,4 +1,5 @@
-|-- api/
+|-- lib/
+|       *api goes here
 |
 |-- pages/
 |

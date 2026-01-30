@@ -1,9 +1,15 @@
-# CS-Senior-Project-S26
+# cs-senior-project-s26
 
-User Stories With NFRs/FRs:
+To install dependencies:
 
-https://docs.google.com/spreadsheets/d/1CjxA1hBbWPD82OMiB79G0xq6Zm-7gjKLfdG4qwQwk8E/edit?gid=0#gid=0
+```bash
+bun install
+```
 
-Iterations Doc:
+To run:
 
-https://docs.google.com/document/d/1UZ6rVC4nSxyJkcLlamUfHo8nYBLbZGsIIqL0wxsE1gE/edit?usp=sharing
+```bash
+bun run index.ts
+```
+
+This project was created using `bun init` in bun v1.3.8. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
