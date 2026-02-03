@@ -1,14 +1,19 @@
 |--controllers/
+|       Layer to handle HTTP requests. Ties the service with the frontend. Defined by routes
 |
 |-- models/
+|       Layer to access data and change it or create new data.
 |
 |-- views/
 |
 |-- routes/
+|       Routes layer that defines the endpoints for the API.
 |
 |-- services/
+|       Layer to handle busniess logic, workflows, or decisions.
 |
 |-- middleware/
+|       Folder to organize middleware software such as Protected Routes and Auth.
 |
 |-- utils/
 |       *db goes here
