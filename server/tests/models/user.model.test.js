@@ -23,3 +23,18 @@ const validUser = {
     emergencyContact: "test 2",
     emergencyPhone: "222-222-2222"
 };
+
+describe("User model tests", () => {
+    beforeEach(() => {
+        clearUsers();
+    });
+    
+    it("stores and retrieves a user by username", async => {
+    });
+
+    it("retrieves user by email", async => {
+    });
+
+    it("updates stored user fields", async => {
+    });
+});
