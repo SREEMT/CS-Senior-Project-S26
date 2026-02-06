@@ -7,7 +7,7 @@ import {
     // findUserByUsername,
     //findUserByEamil,
     //findUserById,
-    //updateUser,
+    updateUserModel,
     //deleteUser,
     //clearUsers
 } from "../../src/models/user.model.js"

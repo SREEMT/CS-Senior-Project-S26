@@ -19,7 +19,7 @@ export function createUser(data) {
     return user;
 }
 
-export function updateUser(id, updates) {
+export function updateUserModel(id, updates) {
     const user = users.get(id);
     if (!user) return null;
 

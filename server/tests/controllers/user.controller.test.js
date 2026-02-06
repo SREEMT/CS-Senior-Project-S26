@@ -2,16 +2,35 @@
 
 import { describe, it, expect, mock } from "bun:test";
 
-mock.module("../../src/services/user.service.js", () => ({
-    registerUser: async (data) => ({
-        id: "1",
-        ...data
-    }),
-    updateUser: async (id, data) => ({
-        id,
-        ...data
-    })
-}));
+mock.module("../../src/services/user.service.js", () => {
+    const REQUIRED_FIELDS = [
+        "username",
+        "password",
+        "name",
+        "email",
+        "birthdate",
+        "address",
+        "phone",
+        "csdNumber",
+        "emergencyContact",
+        "emergencyPhone"
+    ];
+
+    return {
+        registerUser: async (data) => {
+            for (const field of REQUIRED_FIELDS) {
+                if (!data[field]) {
+                    throw new Error("Missing required fields");
+                }
+            }
+            return { id: "1", ...data };
+        },
+        updateUser: async (id, data) => ({
+            id,
+            ...data
+        })
+    };
+});
 
 import {
     registerController,
@@ -48,24 +67,17 @@ describe("User controller tests", () => {
     });
 
     it("Returns 400 when service throws an error", async () => {
-        const { registerUser } =
-            await import("../../src/services/user.service.js");
-        
-        registerUser.mockImplementationOnce(() => {
-            throw new Error("Missing required fields");
-        });
-
         const req = new Request("http://localhost/api/users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({})
         });
 
-        try {
-            await registerController(req);
-        } catch (err) {
-            expect(err.message).toBe("Missing required fields");
-        }
+        const res = await registerController(req);
+        const body = await res.json()
+
+        expect(res.status).toBe(400);
+        expect(body.error).toBe("Missing required fields");
     });
 
     it("Returns 200 when a user info is updated", async () => {

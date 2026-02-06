@@ -3,7 +3,7 @@
 // Import methods to create or login
 import {
     registerController,
-    //updateController,
+    updateController,
     //getUserController
 } from "../controllers/user.controller.js";
 
