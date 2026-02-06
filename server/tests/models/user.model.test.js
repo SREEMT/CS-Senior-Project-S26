@@ -29,12 +29,40 @@ describe("User model tests", () => {
         clearUsers();
     });
     
-    it("stores and retrieves a user by username", async => {
+    it("stores and retrieves a user by username", () => {
+        createUser(validUser);
+
+        const user = findUserByUsername("test");
+        expect(user.username).toBe("test");
+        expect(user.email).toBe("test@test.com");
+        expect(user.name).toBe("test name");
     });
 
-    it("retrieves user by email", async => {
+    it("retrieves user by email", () => {
+        createUser(validUser);
+
+        const user = findUserByEamil("test@test.com");
+        expect(user.username).toBe("test");
     });
 
-    it("updates stored user fields", async => {
+    it("updates stored user fields", () => {
+        const user = createUser(validUser);
+
+        const updated = updateUser(user.id, {
+            name: "Updated Name",
+            address: "456 New St"
+        });
+
+        expect(updated.name).toBe("Updated Name");
+        expect(updated.address).toBe("456 New St");
+    });
+
+    it("deletes a user", () => {
+        const user = createUser(validUser);
+
+        deleteUser(user.id);
+
+        const found = findUserByUsername("test");
+        expect(found).toBeNull();
     });
 });
