@@ -9,9 +9,11 @@ const PORT = 3049;
 serve({
     port: PORT,
     fetch(req) {
-        const response = userRoutes(req);
-
-        return response ?? new Response("Not Found", {status: 404})
+        return (
+            userRoutes(req) ??
+            // authRoutes(req) ??
+            new Response("Note Found", { status: 404 })
+        );
     }
 });
 
