@@ -8,7 +8,7 @@ import {
     findUserByEmail,
     findUserById,
     updateUserModel,
-    //deleteUser,
+    //deleteUser,               // The delete functions from model are for admin users only
     //clearUsers
 } from "../../src/models/user.model.js"
 
@@ -78,7 +78,7 @@ export async function updateUser(id, data) {
 }
 
 // Get user id for data retrieval
-export async function getUserByID(id) {
+export async function getUserById(id) {
     const user = findUserById(id);
 
     if (!user)  {

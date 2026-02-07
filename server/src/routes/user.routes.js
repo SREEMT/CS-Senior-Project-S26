@@ -15,7 +15,7 @@ export function userRoutes(req) {
         return registerController(req);
     }
 
-    /**
+    
     if (req.method === "GET" && url.pathname.startsWith("/api/users/")) {
         const id = url.pathname.split("/").pop();
         return getUserController(req, {params: { id } });
@@ -25,6 +25,6 @@ export function userRoutes(req) {
         const id = url.pathname.split("/").pop();
         return updateController(req, { params: { id } });
     }
-    */
+    
     return null;
 }
