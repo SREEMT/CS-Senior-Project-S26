@@ -4,8 +4,8 @@
 
 import {
     createUser,
-    // findUserByUsername,
-    //findUserByEamil,
+    findUserByUsername,
+    findUserByEmail,
     findUserById,
     updateUserModel,
     //deleteUser,
@@ -36,6 +36,13 @@ export async function registerUser(data) {
 
     // Make sure user is unique
     // Implement once find user features are implemented
+    if (findUserByUsername(data.username)) {
+        throw new Error("Username already taken");
+    }
+
+    if (findUserByEmail(data.email)) {
+        throw new Error("Email already registered");
+    }
 
     //create user after checking if its unique
     return createUser(data)
@@ -63,7 +70,7 @@ export async function updateUser(id, data) {
         }
     }
 
-    if (Objet.keys(updates).length === 0) {
+    if (Object.keys(updates).length === 0) {
         throw new Error("No valid fields to update");
     }
 

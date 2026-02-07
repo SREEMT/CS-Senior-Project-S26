@@ -48,7 +48,7 @@ export function findUserByUsername(username) {
 }
 
 //find a user by their email
-export function findUserByEamil(email) {
+export function findUserByEmail(email) {
     for (const user of users.values()) {
         if (user.email === email) {
             return user;

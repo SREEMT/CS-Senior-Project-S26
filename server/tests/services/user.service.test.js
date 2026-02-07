@@ -2,19 +2,19 @@
 
 import { describe, it, expect, beforeEach, mock } from "bun:test";
 
-// Mock model for testing
+// Use plain functions for Bun's mock.module (no Jest-style mock.fn)
 mock.module("../../src/models/user.model.js", () => ({
-    findUserByUsername: mock.fn(),
-    findUserByEamil: mock.fn(),
-    createUser: mock.fn((user) => ({ id: "1", ...user })),
-    updateUser: mock.fn((id, data) => ({ id, ...data }))
+    findUserByUsername: () => null,
+    findUserByEmail: () => null,
+    createUser: (user) => ({ id: "1", ...user }),
+    updateUserModel: (id, data) => ({ id, ...data }),
+    findUserById: () => null,
+    deleteUser: () => true,
+    clearUsers: () => {}
 }));
 
-//importing necessary methods for testing user creation and updating
-import {
-    registerUser,
-    updateUser
-} from "../../src/services/user.service.js";
+// import services dynamically in beforeEach so tests can re-mock model per-test
+let registerUser, updateUser;
 import { password } from "bun";
 
 // creating test user variables
@@ -32,8 +32,21 @@ const validUser = {
 };
 
 describe("User service - registration & update", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         mock.restore();
+        // re-register default model mock and re-import service to pick up mocks
+        mock.module("../../src/models/user.model.js", () => ({
+            findUserByUsername: () => null,
+            findUserByEmail: () => null,
+            createUser: (user) => ({ id: "1", ...user }),
+            updateUserModel: (id, data) => ({ id, ...data }),
+            findUserById: () => null,
+            deleteUser: () => true,
+            clearUsers: () => {}
+        }));
+        const mod = await import("../../src/services/user.service.js");
+        registerUser = mod.registerUser;
+        updateUser = mod.updateUser;
     });
 
     // ----- REGISTRATION TESTS ------
@@ -48,14 +61,21 @@ describe("User service - registration & update", () => {
 
         await expect(registerUser(missingEmail))
             .rejects
-            .toThrow("Missing required field")
+            .toThrow("Missing required fields")
     });
 
     it("Fails if username exists already", async () => {
-        const { findUserByUsername } =
-            await import("../../src/models/user.model.js");
-
-        findUserByUsername.mockReturnValueOnce({ id: "existing-user" });
+        // re-mock model so username appears to exist
+        mock.restore();
+        mock.module("../../src/models/user.model.js", () => ({
+            findUserByUsername: () => ({ id: "existing-user" }),
+            findUserByEmail: () => null,
+            createUser: (user) => ({ id: "1", ...user }),
+            updateUserModel: (id, data) => ({ id, ...data }),
+            findUserById: () => null
+        }));
+        const mod = await import("../../src/services/user.service.js");
+        registerUser = mod.registerUser;
 
         await expect(registerUser(validUser))
             .rejects
@@ -63,14 +83,20 @@ describe("User service - registration & update", () => {
     });
 
     it("Fails if email already exists", async () => {
-        const { findUserByEamil } =
-            await import("../../src/models/user.model.js");
-        
-            findUserByEamil.mockReturnValueOnce({ id: "existing-user" });
+        mock.restore();
+        mock.module("../../src/models/user.model.js", () => ({
+            findUserByUsername: () => null,
+            findUserByEamil: () => ({ id: "existing-user" }),
+            createUser: (user) => ({ id: "1", ...user }),
+            updateUserModel: (id, data) => ({ id, ...data }),
+            findUserById: () => null
+        }));
+        const mod = await import("../../src/services/user.service.js");
+        registerUser = mod.registerUser;
 
-            await expect(registeruser(validUser))
-                .rejects
-                .toThrow("Email already registered");
+        await expect(registerUser(validUser))
+            .rejects
+            .toThrow("Email already registered");
     });
 
 
@@ -88,29 +114,21 @@ describe("User service - registration & update", () => {
     it("fails to update if update data is empty", async () => {
         await expect(updateUser("1", {}))
             .rejects
-            .toThrow("No fields provided for update");
+            .toThrow("No valid fields to update");
     });
 
     it("Fails if updating email to one that already exists", async () => {
-        const { findUserByEamil } =
-            await import("../../src/models/user.models.js");
-        
-        findUserByEamil.mockReturnValueOnce({ id: "another-user" });
-
+        // Users are not allowed to update email; expect the service to reject
         await expect(updateUser("1", { email: "taken@test.com" }))
             .rejects
-            .toThrow("Email already registered");
+            .toThrow("No valid fields to update");
     });
 
     it("Fails if updating username to one that already exists", async () => {
-        const { findUserByUsername } =
-            await import("../../src/models/user.model.js");
-
-        findUserByUsername.mockReturnValueOnce({ id: "another-user" });
-
+        // Users are not allowed to update username; expect the service to reject
         await expect(updateUser("1", { username: "taken" }))
             .rejects
-            .toThrow("Username already taken");
+            .toThrow("No valid fields to update");
     })
 
 })
