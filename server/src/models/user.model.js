@@ -19,6 +19,7 @@ export function createUser(data) {
     return user;
 }
 
+// update user model information
 export function updateUserModel(id, updates) {
     const user = users.get(id);
     if (!user) return null;
@@ -29,4 +30,39 @@ export function updateUserModel(id, updates) {
     };
     users.set(id, updated);
     return updated;
+}
+
+// find a user by their id
+export function findUserById(id) {
+    return users.get(id) || null;
+}
+
+//find user by username
+export function findUserByUsername(username) {
+    for (const user of users.values()) {
+        if (user.username === username) {
+            return user;
+        }
+    }
+    return null;
+}
+
+//find a user by their email
+export function findUserByEamil(email) {
+    for (const user of users.values()) {
+        if (user.email === email) {
+            return user;
+        }
+    }
+    return null;
+}
+
+// delete user by id
+export function deleteUser(id) {
+    return users.delete(id);
+}
+
+// Clears users for tests only
+export function clearUsers() {
+    users.clear();
 }

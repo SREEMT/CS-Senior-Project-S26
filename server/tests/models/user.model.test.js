@@ -6,7 +6,7 @@ import {
     createUser,
     findUserByUsername,
     findUserByEamil,
-    updateUser,
+    updateUserModel,
     deleteUser,
     clearUsers
 } from "../../src/models/user.model.js"
@@ -48,7 +48,7 @@ describe("User model tests", () => {
     it("updates stored user fields", () => {
         const user = createUser(validUser);
 
-        const updated = updateUser(user.id, {
+        const updated = updateUserModel(user.id, {
             name: "Updated Name",
             address: "456 New St"
         });

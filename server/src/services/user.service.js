@@ -6,7 +6,7 @@ import {
     createUser,
     // findUserByUsername,
     //findUserByEamil,
-    //findUserById,
+    findUserById,
     updateUserModel,
     //deleteUser,
     //clearUsers
@@ -71,3 +71,12 @@ export async function updateUser(id, data) {
 }
 
 // Get user id for data retrieval
+export async function getUserByID(id) {
+    const user = findUserById(id);
+
+    if (!user)  {
+        throw new Error("User not found");
+    }
+
+    return user;
+}

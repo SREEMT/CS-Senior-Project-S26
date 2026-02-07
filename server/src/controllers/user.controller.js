@@ -5,7 +5,7 @@
 import {
     registerUser,
     updateUser,
-    //getUserById
+    getUserById
 } from "../services/user.service.js";
 
 // POST /api/users
@@ -48,3 +48,18 @@ export async function updateController(req, { params }) {
 
 //GET /api/users/:id
 //Get user by ID
+export async function getUserController(req, { params }) {
+    try {
+        const user = await getUserById(params.id);
+
+        return new Response(JSON.stringify(user), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 404 }
+        );
+    }
+}
