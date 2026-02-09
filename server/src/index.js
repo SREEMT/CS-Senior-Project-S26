@@ -12,6 +12,7 @@ serve({
         return (
             userRoutes(req) ??
             // authRoutes(req) ??
+            // adminRoutes(req) ??
             new Response("Note Found", { status: 404 })
         );
     }
