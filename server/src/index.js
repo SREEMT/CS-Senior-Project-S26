@@ -1,8 +1,17 @@
 import { serve } from "bun";
-import { userRoutes } from "./routes/user.routes.js"
+
+import { userRoutes } from "./routes/user.routes.js";
+import { dogRoutes } from "./routes/dog.routes.js";
+//import { adminRoutes } from "./routes/admin.routes.js";
+
+import dotenv from "dotenv";
+dotenv.config();
 
 // Current port for local development.
 // Will implement .env
+import { connectDB } from "./config/db.js";
+console.log("MONGO_URI:", process.env.MONGO_URI);
+connectDB();
 const PORT = 3049;
 
 // Serve method to start API
