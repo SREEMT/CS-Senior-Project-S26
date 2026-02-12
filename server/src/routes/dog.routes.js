@@ -7,15 +7,15 @@ import {
 
 import { authenticate, authorizeAdmin } from "../middleware/auth.js";
 
-export function dogRoutes(req) {
+export async function dogRoutes(req) {
   const url = new URL(req.url);
 
   if (req.method === "POST" && url.pathname === "/api/dogs") {
-    return authenticate(req, () => createDog(req));
+    return await authenticate(req, async () => await createDog(req));
   }
 
   if (req.method === "GET" && url.pathname === "/api/dogs/mine") {
-    return authenticate(req, () => getMyDogs(req));
+    return authenticate(req, async () => await getMyDogs(req));
   }
 
   if (req.method === "GET" && url.pathname === "/api/dogs") {

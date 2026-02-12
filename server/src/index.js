@@ -2,7 +2,8 @@ import { serve } from "bun";
 
 import { userRoutes } from "./routes/user.routes.js";
 import { dogRoutes } from "./routes/dog.routes.js";
-//import { adminRoutes } from "./routes/admin.routes.js";
+import { adminRoutes } from "./routes/admin.routes.js";
+import { authRoutes } from "./routes/auth.routes.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -20,8 +21,9 @@ serve({
     fetch(req) {
         return (
             userRoutes(req) ??
-            // authRoutes(req) ??
-            // adminRoutes(req) ??
+            authRoutes(req) ??
+            dogRoutes(req) ??
+            adminRoutes(req) ??
             new Response("Note Found", { status: 404 })
         );
     }

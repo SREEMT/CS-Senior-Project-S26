@@ -3,66 +3,73 @@
 // Methods: createUser, findUserByUsername, findUserByEamil, findUserById, updateUser, deleteUser, clearUsers
 
 // Creates random ID for user
-import { randomUUID } from "crypto";
+import mongoose from "mongoose";
 
-const users = new Map();
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String, 
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-//creates user
-export function createUser(data) {
-    const id = randomUUID();
+const User = mongoose.model("User", userSchema);
 
-    const user = {
-        id,
-        ...data
-    };
-    users.set(id, user);
-    return user;
+export default User;
+
+export async function createUser(userData) {
+  const user = await User.create(userData);
+  const obj = user.toObject();
+  obj.id = obj._id.toString();
+  return obj;
 }
 
-// update user model information
-export function updateUserModel(id, updates) {
-    const user = users.get(id);
-    if (!user) return null;
-
-    const updated = {
-        ...user,
-        ...updates
-    };
-    users.set(id, updated);
-    return updated;
+export async function findUserByEmail(email) {
+  const user = await User.findOne({ email: email?.toLowerCase() });
+  if (!user) return null;
+  const obj = user.toObject();
+  obj.id = obj._id.toString();
+  return obj;
 }
 
-// find a user by their id
-export function findUserById(id) {
-    return users.get(id) || null;
+export async function findUserById(id) {
+  const user = await User.findById(id).select("-password");
+  if (!user) return null;
+  const obj = user.toObject();
+  obj.id = obj._id.toString();
+  return obj;
 }
 
-//find user by username
-export function findUserByUsername(username) {
-    for (const user of users.values()) {
-        if (user.username === username) {
-            return user;
-        }
-    }
-    return null;
+export async function updateUserModel(id, updates) {
+  const user = await User.findByIdAndUpdate(id, updates, {
+    new: true,
+    runValidators: true,
+  }).select("-password");
+
+  if (!user) return null;
+
+  const obj = user.toObject();
+  obj.id = obj._id.toString();
+  return obj;
 }
 
-//find a user by their email
-export function findUserByEmail(email) {
-    for (const user of users.values()) {
-        if (user.email === email) {
-            return user;
-        }
-    }
-    return null;
-}
-
-// delete user by id
-export function deleteUser(id) {
-    return users.delete(id);
-}
-
-// Clears users for tests only
-export function clearUsers() {
-    users.clear();
+export async function deleteUser(id) {
+  return await User.findByIdAndDelete(id);
 }

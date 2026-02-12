@@ -8,8 +8,8 @@ import {
     findUserByEmail,
     findUserById,
     updateUserModel,
-    //deleteUser,               // The delete functions from model are for admin users only
-    //clearUsers
+    deleteUser,               // The delete functions from model are for admin users only
+    clearUsers
 } from "../../src/models/user.model.js"
 
 // Field requirements hardcoded into the service layer to prevent faulty input
@@ -87,3 +87,4 @@ export async function getUserById(id) {
 
     return user;
 }
+
