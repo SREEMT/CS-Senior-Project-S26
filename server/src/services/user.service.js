@@ -8,44 +8,45 @@ import {
     findUserByEmail,
     findUserById,
     updateUserModel,
-    deleteUser,               // The delete functions from model are for admin users only
+    deleteUser,
     clearUsers
-} from "../../src/models/user.model.js"
+} from "../models/user.model.js";
+import { hashPassword } from "../utils/password.js";
 
 // Field requirements hardcoded into the service layer to prevent faulty input
 const REQUIRED_FIELDS = [
-  "username",
-  "password",
-  "name",
-  "email",
-  "birthdate",
-  "address",
-  "phone",
-  "csdNumber",
-  "emergencyContact",
-  "emergencyPhone"
+  "username", "password", "name", "email",
+  "birthdate", "address", "phone",
+  "csdnumber", "emergencycontact", "emergencyphone",
 ];
 
 // creates new user by contacting the model layer
 export async function registerUser(data) {
     for (const field of REQUIRED_FIELDS) {
-        if (!data[field]) {
-            throw new Error("Missing required fields");
+        const val = data[field];
+        if (val == null || String(val).trim() === "") {
+            throw new Error(`Missing required field: ${field}`);
         }
     }
 
     // Make sure user is unique
-    // Implement once find user features are implemented
-    if (findUserByUsername(data.username)) {
+    if (await findUserByUsername(data.username)) {
         throw new Error("Username already taken");
     }
 
-    if (findUserByEmail(data.email)) {
+    if (await findUserByEmail(data.email)) {
         throw new Error("Email already registered");
     }
 
-    //create user after checking if its unique
-    return createUser(data)
+    const hashedPassword = await hashPassword(data.password);
+    const userData = {
+        ...data,
+        password: hashedPassword,
+        csdnumber: data.csdnumber ?? data.csdNumber,
+        emergencycontact: data.emergencycontact ?? data.emergencyContact,
+        emergencyphone: data.emergencyphone ?? data.emergencyPhone,
+    };
+    return createUser(userData);
 }
 
 // Update user information
@@ -79,7 +80,7 @@ export async function updateUser(id, data) {
 
 // Get user id for data retrieval
 export async function getUserById(id) {
-    const user = findUserById(id);
+    const user = await findUserById(id);
 
     if (!user)  {
         throw new Error("User not found");

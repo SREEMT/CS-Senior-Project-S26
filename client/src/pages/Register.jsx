@@ -10,9 +10,9 @@ export default function Register() {
     birthdate: "",
     address: "",
     phone: "",
-    csdNumber: "",
-    emergencyContact: "",
-    emergencyPhone: "",
+    csdnumber: "",
+    emergencycontact: "",
+    emergencyphone: "",
   });
 
   const [error, setError] = useState("");
@@ -41,9 +41,9 @@ export default function Register() {
         birthdate: "",
         address: "",
         phone: "",
-        csdNumber: "",
-        emergencyContact: "",
-        emergencyPhone: "",
+        csdnumber: "",
+        emergencycontact: "",
+        emergencyphone: "",
       });
     } catch (err) {
       setError(err.message);
@@ -62,12 +62,12 @@ export default function Register() {
         <input name="email" placeholder="Email" value={form.email} onChange={handleChange} required />
         <input name="username" placeholder="Username" value={form.username} onChange={handleChange} required />
         <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-        <input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} />
-        <input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
-        <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
-        <input name="csdNumber" placeholder="CSD Number" value={form.csdNumber} onChange={handleChange} />
-        <input name="emergencyContact" placeholder="Emergency Contact" value={form.emergencyContact} onChange={handleChange} />
-        <input name="emergencyPhone" placeholder="Emergency Phone" value={form.emergencyPhone} onChange={handleChange} />
+        <input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} required />
+        <input name="address" placeholder="Address" value={form.address} onChange={handleChange} required />
+        <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} required />
+        <input name="csdnumber" placeholder="CSD Number" value={form.csdnumber} onChange={handleChange} required />
+        <input name="emergencycontact" placeholder="Emergency Contact" value={form.emergencycontact} onChange={handleChange} required />
+        <input name="emergencyphone" placeholder="Emergency Phone" value={form.emergencyphone} onChange={handleChange} required />
 
         <button type="submit">Register</button>
       </form>

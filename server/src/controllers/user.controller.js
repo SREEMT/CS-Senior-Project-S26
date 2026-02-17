@@ -21,8 +21,8 @@ export async function registerController(req) {
         });
     } catch (err) {
         return new Response(
-            JSON.stringify({ error: err.message }),
-            {status: 400 }
+            JSON.stringify({ error: err.message, message: err.message }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
         );
     }
 }
