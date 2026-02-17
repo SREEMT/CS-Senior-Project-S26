@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getToken } from "../utils/auth";
+import { getToken } from "../services/auth";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
