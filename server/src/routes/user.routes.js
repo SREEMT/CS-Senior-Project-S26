@@ -4,8 +4,10 @@
 import {
     registerController,
     updateController,
-    getUserController
+    getUserController,
+    getMeController,
 } from "../controllers/user.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 // User routes for registering and login user
 export async function userRoutes(req) {
@@ -15,10 +17,13 @@ export async function userRoutes(req) {
         return registerController(req);
     }
 
-    
+    if (req.method === "GET" && url.pathname === "/api/users/me") {
+        return await requireAuth(req, (r) => getMeController(r));
+    }
+
     if (req.method === "GET" && url.pathname.startsWith("/api/users")) {
         const id = url.pathname.split("/").pop();
-        return await getUserController(req, {params: { id } });
+        return await getUserController(req, { params: { id } });
     }
 
     if (req.method === "PUT" && url.pathname.startsWith("/api/users")) {

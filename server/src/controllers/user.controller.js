@@ -5,7 +5,9 @@
 import {
     registerUser,
     updateUser,
-    getUserById
+    getUserById,
+    getAllUsers,
+    deleteUserById,
 } from "../services/user.service.js";
 
 // POST /api/users
@@ -46,6 +48,15 @@ export async function updateController(req, { params }) {
     }
 }
 
+// GET /api/users/me (requires auth)
+export async function getMeController(req) {
+    const user = req.user;
+    return new Response(JSON.stringify(user), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+    });
+}
+
 //GET /api/users/:id
 //Get user by ID
 export async function getUserController(req, { params }) {
@@ -60,6 +71,39 @@ export async function getUserController(req, { params }) {
         return new Response(
             JSON.stringify({ error: err.message }),
             { status: 404 }
+        );
+    }
+}
+
+// GET /api/admin/users – list all users (admin only)
+export async function getAllUsersController(req) {
+    try {
+        const users = await getAllUsers();
+        return new Response(JSON.stringify(users), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+    }
+}
+
+// DELETE /api/admin/users/:id – delete user (admin only)
+export async function deleteUserController(req, { params }) {
+    try {
+        const result = await deleteUserById(params.id);
+        return new Response(JSON.stringify(result), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (err) {
+        const status = err.message === "User not found" ? 404 : 500;
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status, headers: { "Content-Type": "application/json" } }
         );
     }
 }

@@ -57,6 +57,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
   },
   {
     timestamps: true,
@@ -127,6 +132,16 @@ export async function findUserByUsername(username) {
   const obj = user.toObject();
   obj.id = obj._id.toString();
   return obj;
+}
+
+/** Get all users (no password). For admin use. */
+export async function findAllUsers() {
+  const users = await User.find().select("-password").lean();
+  return users.map((u) => ({
+    ...u,
+    id: u._id.toString(),
+    _id: undefined,
+  }));
 }
 
 /** Remove all users (for tests). */

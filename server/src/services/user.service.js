@@ -9,7 +9,8 @@ import {
     findUserById,
     updateUserModel,
     deleteUser,
-    clearUsers
+    clearUsers,
+    findAllUsers as findAllUsersModel,
 } from "../models/user.model.js";
 import { hashPassword } from "../utils/password.js";
 
@@ -62,12 +63,17 @@ export async function updateUser(id, data) {
         "emergencyContact",
         "emergencyPhone"
     ];
+    const fieldToModel = {
+        emergencyContact: "emergencycontact",
+        emergencyPhone: "emergencyphone",
+    };
 
     const updates = {};
 
     for (const field of allowedFields) {
         if (data[field] !== undefined) {
-            updates[field] = data[field];
+            const modelKey = fieldToModel[field] ?? field;
+            updates[modelKey] = data[field];
         }
     }
 
@@ -87,5 +93,20 @@ export async function getUserById(id) {
     }
 
     return user;
+}
+
+// Get all users (admin only)
+export async function getAllUsers() {
+    return findAllUsersModel();
+}
+
+// Delete user by id (admin only)
+export async function deleteUserById(id) {
+    const user = await findUserById(id);
+    if (!user) {
+        throw new Error("User not found");
+    }
+    await deleteUser(id);
+    return { deleted: true, id };
 }
 
