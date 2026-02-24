@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { getToken } from "../services/auth";
+import { Link } from "react-router-dom";
+import { getToken, logout } from "../services/auth";
+import "./Profile.css";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -7,108 +9,167 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("success");
 
   const token = getToken();
 
-  // Fetch current user
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("http://localhost:3049/api/users/me", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const res = await fetch("/api/users/me", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load");
         setUser(data);
-        setForm(data);
+        setForm({
+          name: data.name ?? "",
+          address: data.address ?? "",
+          phone: data.phone ?? "",
+          emergencyContact: data.emergencycontact ?? data.emergencyContact ?? "",
+          emergencyPhone: data.emergencyphone ?? data.emergencyPhone ?? "",
+        });
       } catch {
-        setMessage("Failed to load user");
+        setMessage("Failed to load profile");
+        setMessageType("error");
       } finally {
         setLoading(false);
       }
     }
-
     fetchUser();
   }, [token]);
 
   function handleChange(e) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
-
     try {
-      const res = await fetch(
-        `http://localhost:3049/api/users/${user.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(form)
-        }
-      );
-
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
       const data = await res.json();
-      setUser(data);
+      if (!res.ok) throw new Error(data.error || "Update failed");
+      setUser({ ...user, ...data });
       setMessage("Profile updated!");
-    } catch {
-      setMessage("Update failed");
+      setMessageType("success");
+    } catch (err) {
+      setMessage(err.message || "Update failed");
+      setMessageType("error");
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="profile-page-inner">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="profile-page">
+        <div className="profile-page-inner">
+          <p>{message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: 500, margin: "2rem auto" }}>
-      <h2>My Profile</h2>
+    <div className="profile-page">
+      <div className="profile-page-inner">
+        <header className="profile-header">
+          <h2>My Profile</h2>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            {(user.role === "admin") && (
+              <Link to="/admin/users" className="btn-link">Manage users</Link>
+            )}
+            <button type="button" className="btn-logout" onClick={logout}>
+              Log out
+            </button>
+          </div>
+        </header>
 
-      {message && <p>{message}</p>}
+        {message && (
+          <p className={`profile-message ${messageType}`}>{message}</p>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          value={form.name || ""}
-          onChange={handleChange}
-          placeholder="Name"
-        />
+        <section className="profile-card">
+        <h3>Account info</h3>
+        <div className="profile-row">
+          <strong>Name</strong> {user.name}
+        </div>
+        <div className="profile-row">
+          <strong>Email</strong> {user.email}
+        </div>
+        <div className="profile-row">
+          <strong>Username</strong> {user.username}
+        </div>
+        {user.birthdate && (
+          <div className="profile-row">
+            <strong>Birth date</strong> {user.birthdate}
+          </div>
+        )}
+        {user.csdnumber && (
+          <div className="profile-row">
+            <strong>CSD number</strong> {user.csdnumber}
+          </div>
+        )}
+      </section>
 
-        <input
-          name="email"
-          value={form.email || ""}
-          onChange={handleChange}
-          placeholder="Email"
-        />
-
-        <input
-          name="phone"
-          value={form.phone || ""}
-          onChange={handleChange}
-          placeholder="Phone"
-        />
-
-        <input
-          name="address"
-          value={form.address || ""}
-          onChange={handleChange}
-          placeholder="Address"
-        />
-
-        <button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Save"}
-        </button>
-      </form>
+      <section className="profile-card">
+        <h3>Edit profile</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Name"
+          />
+          <input
+            name="address"
+            value={form.address}
+            onChange={handleChange}
+            placeholder="Address"
+          />
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="Phone"
+          />
+          <input
+            name="emergencyContact"
+            value={form.emergencyContact}
+            onChange={handleChange}
+            placeholder="Emergency contact"
+          />
+          <input
+            name="emergencyPhone"
+            value={form.emergencyPhone}
+            onChange={handleChange}
+            placeholder="Emergency phone"
+          />
+          <button type="submit" disabled={saving}>
+            {saving ? "Saving..." : "Save changes"}
+          </button>
+        </form>
+      </section>
+      </div>
     </div>
   );
 }
