@@ -4,6 +4,7 @@ import { userRoutes } from "./routes/user.routes.js";
 import { dogRoutes } from "./routes/dog.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+// import { certificationRoutes } from "./routes/certification.routes.js";
 
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
