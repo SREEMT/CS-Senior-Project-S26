@@ -46,22 +46,22 @@ export default function AdminUsers() {
 
   if (loading) {
     return (
-      <div className="admin-users-page">
+      <div className="page-full-column admin-users-page">
         <div className="admin-users-inner">
-          <p>Loading users...</p>
+          <p className="admin-users-loading">Loading users...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-users-page">
+    <div className="page-full-column admin-users-page">
       <div className="admin-users-inner">
         <header className="admin-users-header">
           <h2>Manage Users</h2>
           <div className="admin-users-actions">
-            <Link to="/profile" className="btn-link">Profile</Link>
-            <button type="button" className="btn-logout" onClick={logout}>
+            <Link to="/profile" className="btn-secondary">Profile</Link>
+            <button type="button" className="btn-secondary btn-logout" onClick={logout}>
               Log out
             </button>
           </div>

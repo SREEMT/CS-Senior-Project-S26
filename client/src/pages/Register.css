@@ -1,0 +1,7 @@
+.register-box {
+  max-width: 500px;
+}
+
+.register-box form {
+  gap: 0.75rem;
+}

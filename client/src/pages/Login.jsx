@@ -25,11 +25,11 @@ export default function Login() {
   }
 
   return (
-    <div className="login-page">
-      <div className="login">
-        <h2>CSD Central</h2>
+    <div className="page-full">
+      <div className="card login-box">
+        <h2>Login</h2>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="text-error">{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
@@ -48,7 +48,7 @@ export default function Login() {
             onChange={handleChange}
             required
           />
-          <button type="submit">Login</button>
+          <button type="submit">Sign In</button>
         </form>
       </div>
     </div>
