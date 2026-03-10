@@ -71,9 +71,9 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="profile-page">
+      <div className="page-full-column profile-page">
         <div className="profile-page-inner">
-          <p>Loading...</p>
+          <p className="profile-loading">Loading...</p>
         </div>
       </div>
     );
@@ -81,24 +81,24 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <div className="profile-page">
+      <div className="page-full-column profile-page">
         <div className="profile-page-inner">
-          <p>{message}</p>
+          <p className="text-error">{message}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="profile-page">
+    <div className="page-full-column profile-page">
       <div className="profile-page-inner">
         <header className="profile-header">
           <h2>My Profile</h2>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <div className="profile-header-actions">
             {(user.role === "admin") && (
-              <Link to="/admin/users" className="btn-link">Manage users</Link>
+              <Link to="/admin/users" className="btn-secondary">Manage users</Link>
             )}
-            <button type="button" className="btn-logout" onClick={logout}>
+            <button type="button" className="btn-secondary btn-logout" onClick={logout}>
               Log out
             </button>
           </div>
