@@ -9,6 +9,7 @@ import {
     getAllUsers,
     deleteUserById,
 } from "../services/user.service.js";
+import * as dogService from "../services/dog.service.js";
 
 // POST /api/users (via /api/auth/register)
 // Creates new user (registration)
@@ -75,14 +76,23 @@ export async function getUserController(req, { params }) {
     }
 }
 
-// GET /api/admin/users – list all users (admin only)
+// GET /api/admin/users – list all users with their dogs (admin only)
 export async function getAllUsersController(req) {
     try {
         const users = await getAllUsers();
-        return new Response(JSON.stringify(users), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
+        const allDogs = await dogService.getAllDogsLean();
+        const usersWithDogs = users.map((u) => ({
+            ...u,
+            dogs: allDogs.filter((d) => d.ownerId === u.id),
+        }));
+        const standaloneDogs = allDogs.filter((d) => !d.ownerId);
+        return new Response(
+            JSON.stringify({ users: usersWithDogs, standaloneDogs }),
+            {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }
+        );
     } catch (err) {
         return new Response(
             JSON.stringify({ error: err.message }),

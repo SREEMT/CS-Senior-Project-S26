@@ -115,16 +115,21 @@ export async function getAllDogs(req) {
 
 export async function deleteDog(req) {
   try {
-    await dogService.deleteDog(req.params.id);
-
+    const deleted = await dogService.deleteDog(req.params.id);
+    if (!deleted) {
+      return new Response(
+        JSON.stringify({ error: "Dog not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
+    }
     return new Response(
       JSON.stringify({ message: "Dog deleted" }),
-      { status: 200 }
+      { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err.message }),
-      { status: 500 }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

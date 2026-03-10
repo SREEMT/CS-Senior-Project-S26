@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAdminUsers, deleteAdminUser } from "../services/admin";
+import { getAdminUsers, deleteAdminUser, deleteAdminDog } from "../services/admin";
 import { logout } from "../services/auth";
 import "./AdminUsers.css";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const [standaloneDogs, setStandaloneDogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [deletingDogId, setDeletingDogId] = useState(null);
 
   useEffect(() => {
     loadUsers();
@@ -19,7 +21,8 @@ export default function AdminUsers() {
     setMessage(null);
     try {
       const data = await getAdminUsers();
-      setUsers(data);
+      setUsers(data.users ?? data);
+      setStandaloneDogs(data.standaloneDogs ?? []);
     } catch (err) {
       setMessage(err.message || "Failed to load users");
     } finally {
@@ -41,6 +44,33 @@ export default function AdminUsers() {
       setMessage(err.message || "Failed to delete user");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleDeleteDog(dog, ownerUserId) {
+    if (!window.confirm(`Delete dog "${dog.name}"? This cannot be undone.`)) {
+      return;
+    }
+    setDeletingDogId(dog.id);
+    setMessage(null);
+    try {
+      await deleteAdminDog(dog.id);
+      if (ownerUserId != null) {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === ownerUserId
+              ? { ...u, dogs: (u.dogs ?? []).filter((d) => d.id !== dog.id) }
+              : u
+          )
+        );
+      } else {
+        setStandaloneDogs((prev) => prev.filter((d) => d.id !== dog.id));
+      }
+      setMessage("Dog deleted.");
+    } catch (err) {
+      setMessage(err.message || "Failed to delete dog");
+    } finally {
+      setDeletingDogId(null);
     }
   }
 
@@ -84,6 +114,7 @@ export default function AdminUsers() {
                 <th>CSD #</th>
                 <th>Emergency contact</th>
                 <th>Emergency phone</th>
+                <th>Dogs</th>
                 <th>Role</th>
                 <th aria-label="Actions" />
               </tr>
@@ -91,7 +122,7 @@ export default function AdminUsers() {
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={11}>No users registered.</td>
+                  <td colSpan={12}>No users registered.</td>
                 </tr>
               ) : (
                 users.map((u) => (
@@ -105,6 +136,35 @@ export default function AdminUsers() {
                     <td>{u.csdnumber ?? "—"}</td>
                     <td>{u.emergencycontact ?? "—"}</td>
                     <td>{u.emergencyphone ?? "—"}</td>
+                    <td>
+                      <div className="admin-users-dogs">
+                        {(u.dogs ?? []).length === 0 ? (
+                          "—"
+                        ) : (
+                          <ul className="admin-users-dogs-list">
+                            {(u.dogs ?? []).map((d) => (
+                              <li key={d.id} className="admin-users-dog-row">
+                                <span title={`${d.color ?? ""} · ${d.vet ?? ""} · ${d.status ?? ""}`.trim() || undefined}>
+                                  {d.name}
+                                  {(d.color || d.status) && (
+                                    <span className="admin-users-dog-meta"> · {[d.color, d.status].filter(Boolean).join(", ")}</span>
+                                  )}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="btn-delete btn-delete-small"
+                                  disabled={deletingDogId === d.id}
+                                  onClick={() => handleDeleteDog(d, u.id)}
+                                  title={`Delete ${d.name}`}
+                                >
+                                  {deletingDogId === d.id ? "…" : "Delete"}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </td>
                     <td><span className={`role-badge role-${u.role || "user"}`}>{u.role || "user"}</span></td>
                     <td>
                       <button
@@ -123,6 +183,48 @@ export default function AdminUsers() {
             </tbody>
           </table>
         </div>
+
+        {standaloneDogs.length > 0 && (
+          <section className="admin-standalone-dogs">
+            <h3>Dogs without owner</h3>
+            <div className="admin-users-table-wrap">
+              <table className="admin-users-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Date of birth</th>
+                    <th>Veterinarian</th>
+                    <th>Status</th>
+                    <th>Color</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {standaloneDogs.map((d) => (
+                    <tr key={d.id}>
+                      <td>{d.name}</td>
+                      <td>{d.birthDate ? String(d.birthDate).slice(0, 10) : "—"}</td>
+                      <td>{d.vet ?? "—"}</td>
+                      <td>{d.status ?? "—"}</td>
+                      <td>{d.color ?? "—"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          disabled={deletingDogId === d.id}
+                          onClick={() => handleDeleteDog(d, null)}
+                          title={`Delete ${d.name}`}
+                        >
+                          {deletingDogId === d.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
