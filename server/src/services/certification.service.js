@@ -35,7 +35,7 @@ export async function uploadCertification(userId, file, meta) {
 // Takes in userID
 // returns all user certs
 export async function getUserCertification(user) {
-    return findCertsByUser(user.id);
+    return findCertsByUser(user.id.toString());
 }
 
 // Get certs as admin (implement later)

@@ -95,6 +95,7 @@ export default function Profile() {
         <header className="profile-header">
           <h2>My Profile</h2>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <Link to="/certifications" className="btn-link">My Certifications</Link>
             {(user.role === "admin") && (
               <Link to="/admin/users" className="btn-link">Manage users</Link>
             )}

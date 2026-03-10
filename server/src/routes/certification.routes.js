@@ -1,14 +1,13 @@
 // routes for certification managing feature
 
-import { requireAuth } from "../middlewate/auth.middleware.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 import {
     uploadCertificationController,
-    getUserCertifications,
+    getUserCertificationsController,
     getCertificationController,
-    streamCertificationsController,
+    streamCertificationFileController,
     deleteCertificationController,
-    getUsercertificationsController
 } from "../controllers/certification.controller.js";
 
 export async function certificationRoutes(req) {
@@ -16,14 +15,14 @@ export async function certificationRoutes(req) {
 
     // POST /api/certifications
     // upload cert
-    if (req.method === "POST" && url.pathname === "/api/certfications") {
+    if (req.method === "POST" && url.pathname === "/api/certifications") {
         return requireAuth(req, uploadCertificationController);
     }
 
     // GET /api/certifications
     // Get all certifications for auth user
     if (req.method === "GET" && url.pathname === "/api/certifications") {
-        return requireAuth(req, getUsercertificationsController);
+        return requireAuth(req, getUserCertificationsController);
     }
 
     // Routes with ID
@@ -39,11 +38,19 @@ export async function certificationRoutes(req) {
             );
         }
 
-        // GET .../:id/file
+        // GET .../:id
         if (req.method === "DELETE") {
             return requireAuth(req, (req) => 
                 deleteCertificationController(req, { params: { id } })
             ); 
+        }
+
+        // GET .../:id/file
+        // Stream pdf
+        if (req.method === "GET" && subroute === "file") {
+            return requireAuth(req, (req) => 
+                streamCertificationFileController(req, { params: { id } })
+            );
         }
     }
     return null;

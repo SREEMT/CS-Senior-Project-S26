@@ -17,7 +17,7 @@ dotenv.config({ path: join(__dirname, "..", ".env") });
 // Will implement .env
 import { connectDB } from "./config/db.js";
 console.log("MONGO_URI:", process.env.MONGO_URI);
-connectDB();
+await connectDB();
 const PORT = 3049;
 
 // Serve method to start API
@@ -29,7 +29,7 @@ serve({
             (await authRoutes(req)) ??
             (await dogRoutes(req)) ??
             (await adminRoutes(req)) ??
-            // (await certificationRoutes(req)) ??
+            (await certificationRoutes(req)) ??
             null;
         return res ?? new Response("Not Found", { status: 404 });
     }

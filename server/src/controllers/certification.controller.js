@@ -3,13 +3,13 @@
 // Import controller services
 import { 
     uploadCertification,
-    getUserCertifications,
+    getUserCertification,
     getCertification,
     updateCertificationService,
     deleteCertificationService,
-    getCertBucket,
-    findCertById
 } from "../services/certification.service";
+
+import { getCertBucket, findCertById } from "../models/certification.model.js";
 
 // Export upload cert function
 // Takes in req and user
@@ -22,13 +22,13 @@ export async function  uploadCertificationController(req) {
 
         const meta = {
             title: formData.get("title"),
-            issue: formData.get("issuer"),
+            issuer: formData.get("issuer"),
             issueDate: formData.get("issueDate"),
             expirationDate: formData.get("expirationDate")
         };
 
         const user = req.user;
-        const cert = await uploadCertification(user.id, file, meta);
+        const cert = await uploadCertification(user.id.toString(), file, meta);
 
         return new Response(JSON.stringify(cert), {
             status: 201,
@@ -45,9 +45,9 @@ export async function  uploadCertificationController(req) {
 // Get certs from logged in user
 // takes in request
 // returns all user certs when logged in
-export async function getUsercertificationsController(req) {
+export async function getUserCertificationsController(req) {
     try {
-        const certs = await getUserCertifications(req.user);
+        const certs = await getUserCertification(req.user);
 
         return new Response(JSON.stringify(certs), {
             status: 200,
@@ -146,7 +146,7 @@ export async function streamCertificationFileController(req, { params }) {
             );
         }
 
-        const bucket = getCertBucket();
+        const bucket = await getCertBucket();
         const stream = bucket.openDownloadStream(cert.fileId);
 
         return new Response(stream, {

@@ -1,4 +1,4 @@
-const API = "/api";
+const API = "/api/certifications";
 
 function authHeaders() {
     return {
