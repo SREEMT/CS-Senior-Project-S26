@@ -6,7 +6,9 @@ import {
     getUserCertifications,
     getCertification,
     updateCertificationService,
-    deleteCertificationService
+    deleteCertificationService,
+    getCertBucket,
+    findCertById
 } from "../services/certification.service";
 
 // Export upload cert function
@@ -31,6 +33,25 @@ export async function  uploadCertificationController(req) {
         return new Response(JSON.stringify(cert), {
             status: 201,
             headers: { "Content-Type": "application/json"}
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 400 }
+        );
+    }
+}
+
+// Get certs from logged in user
+// takes in request
+// returns all user certs when logged in
+export async function getUsercertificationsController(req) {
+    try {
+        const certs = await getUserCertifications(req.user);
+
+        return new Response(JSON.stringify(certs), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
         });
     } catch (err) {
         return new Response(
@@ -102,6 +123,42 @@ export async function deleteCertificationController(req, { params }) {
         return new Response(
             JSON.stringify({ error: err.message }),
             { status: 400 }
+        );
+    }
+}
+
+// Stream certification from GridFS
+export async function streamCertificationFileController(req, { params }) {
+    try {
+        const cert = await findCertById(params.id);
+
+        if (!cert) {
+            return new Response(
+                JSON.stringify({ error: "Certification not found "}),
+                { status: 404 }
+            );
+        }
+
+        if (req.user.role !== "admin" && cert.userId.toString() !== req.user.id) {
+            return new Response(
+                JSON.stringify({ error: "Forbidden" }),
+                { status: 403 }
+            );
+        }
+
+        const bucket = getCertBucket();
+        const stream = bucket.openDownloadStream(cert.fileId);
+
+        return new Response(stream, {
+            headers: {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": "inline"
+            }
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 500 }
         );
     }
 }
