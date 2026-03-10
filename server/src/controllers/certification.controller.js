@@ -62,3 +62,46 @@ export async function getCertificationController(req, { params }) {
 // update certification
 // Takes in requests and params
 // updates a certification from user
+export async function updateCertificationController(req, { params }) {
+    try {
+        const body = await req.json();
+
+        const cert = await updateCertificationService(
+            params.id,
+            body,
+            req.user
+        );
+
+        return new Response(JSON.stringify(cert), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 400 }
+        );
+    }
+}
+
+// Delete a certification
+// Takes in a request and params
+// Deletes a selected certification
+export async function deleteCertificationController(req, { params }) {
+    try {
+        const result = await deleteCertificationService(
+            params.id,
+            req.user
+        );
+
+        return new Response(JSON.stringify(result), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
+    } catch (err) {
+        return new Response(
+            JSON.stringify({ error: err.message }),
+            { status: 400 }
+        );
+    }
+}
