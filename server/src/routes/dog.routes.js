@@ -1,5 +1,6 @@
 import {
   createDog,
+  registerDog,
   getMyDogs,
   getAllDogs,
   deleteDog,
@@ -9,6 +10,10 @@ import { authenticate, authorizeAdmin } from "../middleware/auth.js";
 
 export async function dogRoutes(req) {
   const url = new URL(req.url);
+
+  if (req.method === "POST" && url.pathname === "/api/dogs/register") {
+    return await registerDog(req);
+  }
 
   if (req.method === "POST" && url.pathname === "/api/dogs") {
     return await authenticate(req, async () => await createDog(req));

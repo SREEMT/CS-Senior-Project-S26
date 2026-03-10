@@ -10,7 +10,7 @@ import {
     deleteUserById,
 } from "../services/user.service.js";
 
-// POST /api/users
+// POST /api/users (via /api/auth/register)
 // Creates new user (registration)
 export async function registerController(req) {
     try {

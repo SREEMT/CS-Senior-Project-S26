@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser } from "../services/auth";
+import { registerUser, registerDog } from "../services/auth";
 import "./Register.css";
 
 export default function Register() {
@@ -16,8 +16,19 @@ export default function Register() {
     emergencyphone: "",
   });
 
+  const [dogForm, setDogForm] = useState({
+    name: "",
+    dateOfBirth: "",
+    veterinarian: "",
+    status: "",
+    color: "",
+  });
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const [dogError, setDogError] = useState("");
+  const [dogSuccess, setDogSuccess] = useState("");
 
   function handleChange(e) {
     setForm({
@@ -26,14 +37,37 @@ export default function Register() {
     });
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  function handleDogChange(e) {
+    setDogForm({
+      ...dogForm,
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  async function submitRegistration(includeDog) {
     setError("");
     setSuccess("");
+    setDogError("");
+    setDogSuccess("");
+
+    const payload = { ...form };
+    if (includeDog && dogForm.name.trim()) {
+      payload.dog = {
+        name: dogForm.name.trim(),
+        dateOfBirth: dogForm.dateOfBirth || undefined,
+        veterinarian: dogForm.veterinarian.trim(),
+        status: dogForm.status.trim(),
+        color: dogForm.color.trim(),
+      };
+    }
 
     try {
-      await registerUser(form);
-      setSuccess("Account created successfully!");
+      await registerUser(payload);
+      setSuccess(
+        includeDog && dogForm.name.trim()
+          ? "Account and dog registered successfully!"
+          : "Account created successfully!"
+      );
       setForm({
         name: "",
         email: "",
@@ -46,8 +80,46 @@ export default function Register() {
         emergencycontact: "",
         emergencyphone: "",
       });
+      setDogForm({
+        name: "",
+        dateOfBirth: "",
+        veterinarian: "",
+        status: "",
+        color: "",
+      });
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    await submitRegistration(false);
+  }
+
+  async function handleDogSubmit(e) {
+    e.preventDefault();
+    setDogError("");
+    setDogSuccess("");
+
+    try {
+      await registerDog({
+        name: dogForm.name.trim(),
+        dateOfBirth: dogForm.dateOfBirth || undefined,
+        veterinarian: dogForm.veterinarian.trim(),
+        status: dogForm.status.trim(),
+        color: dogForm.color.trim(),
+      });
+      setDogSuccess("Dog registered successfully!");
+      setDogForm({
+        name: "",
+        dateOfBirth: "",
+        veterinarian: "",
+        status: "",
+        color: "",
+      });
+    } catch (err) {
+      setDogError(err.message);
     }
   }
 
@@ -72,6 +144,53 @@ export default function Register() {
           <input name="emergencyphone" placeholder="Emergency Phone" value={form.emergencyphone} onChange={handleChange} required />
 
           <button type="submit">Register</button>
+        </form>
+      </div>
+
+      <div className="card register-box">
+        <h2>Register Dog Account</h2>
+
+        {dogError && <p className="text-error">{dogError}</p>}
+        {dogSuccess && <p className="text-success">{dogSuccess}</p>}
+
+        <form onSubmit={handleDogSubmit}>
+          <input
+            name="name"
+            placeholder="Dog Name"
+            value={dogForm.name}
+            onChange={handleDogChange}
+            required
+          />
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={dogForm.dateOfBirth}
+            onChange={handleDogChange}
+            required
+          />
+          <input
+            name="veterinarian"
+            placeholder="Veterinarian"
+            value={dogForm.veterinarian}
+            onChange={handleDogChange}
+            required
+          />
+          <input
+            name="status"
+            placeholder="Status"
+            value={dogForm.status}
+            onChange={handleDogChange}
+            required
+          />
+          <input
+            name="color"
+            placeholder="Color"
+            value={dogForm.color}
+            onChange={handleDogChange}
+            required
+          />
+
+          <button type="submit">Register Dog</button>
         </form>
       </div>
     </div>
