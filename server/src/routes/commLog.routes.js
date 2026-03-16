@@ -1,10 +1,8 @@
-/*
 import {
     createLogController,
     getEventLogsController,
     deleteLogController
 } from "../controllers/commLog.controller.js";
-*/
 
 import { requireAuth } from "../middleware/auth.middleware";
 
@@ -18,7 +16,7 @@ export async function commLogRoutes(req) {
 
     // Get logs for viewing
     if (req.method === "GET" && url.pathname === "/api/communications") {
-        return await requireAuth(req, (r) => getEventsLogsController(r));
+        return await requireAuth(req, (r) => getEventLogsController(r));
     }
 
     // Delete log if Admin
