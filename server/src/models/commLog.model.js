@@ -92,7 +92,7 @@ export async function findLogByEvent(eventId) {
         .sort({ createdAt: -1 })
         .lean();
     
-    return logs.map((1) => ({
+    return logs.map((l) => ({
         ...l,
         id: l._id.toString(),
         _id: undefined,
@@ -112,6 +112,6 @@ export async function findLogById(id) {
 }
 
 // Delete Log
-export async function deleteCommunicationLog(id) {
+export async function deleteCommLog(id) {
     return await CommunicationLog.findByIdAndDelete(id);
 }

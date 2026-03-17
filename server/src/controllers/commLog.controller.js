@@ -1,16 +1,14 @@
-/*
 import {
-    logCommunication,
-    fetchEventLogs,
-    removeCommunicationLog,
-} from "../services/commLog.services.js";
-*/
+    logComm,
+    getEventComm,
+    deleteComm,
+} from "../services/commLog.service.js";
 
 // Create log controller, called by routes
 export async function createLogController(req) {
     try {
         const body = await req.json();
-        const id = await logCommunication(req.user, body);
+        const id = await logComm(req.user, body);
         return new Response(JSON.stringify({ success: true, id }), {
             status: 201,
         });
@@ -26,7 +24,7 @@ export async function getEventLogsController(req) {
     const url = new URL(req.url);
     const eventId = url.searchParams.get("eventId");
 
-    const logs = await fetchEventLogs(eventId);
+    const logs = await getEventComm(eventId);
 
     return Response.json(logs);
 }
@@ -36,7 +34,7 @@ export async function deleteLogController(req) {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
 
-    await removeCommunicationLog(id);
+    await deleteComm(id);
 
     return Response.json({ success: true });
 }
