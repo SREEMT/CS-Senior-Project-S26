@@ -7,6 +7,7 @@ describe("auth.middleware - requireAuth", () => {
 
   it("returns 401 when Authorization header is missing", async () => {
     mock.module("../../src/utils/jwt.js", () => ({
+      signJWT: () => "unused",
       verifyJWT: () => ({}),
     }));
     mock.module("../../src/models/user.model.js", () => ({
@@ -29,6 +30,7 @@ describe("auth.middleware - requireAuth", () => {
 
   it("attaches user and calls next when token and user are valid", async () => {
     mock.module("../../src/utils/jwt.js", () => ({
+      signJWT: () => "unused",
       verifyJWT: () => ({ userId: "user-1" }),
     }));
 
@@ -60,6 +62,7 @@ describe("auth.middleware - requireAuth", () => {
 
   it("returns 401 when verifyJWT or user lookup fails", async () => {
     mock.module("../../src/utils/jwt.js", () => ({
+      signJWT: () => "unused",
       verifyJWT: () => {
         throw new Error("bad token");
       },

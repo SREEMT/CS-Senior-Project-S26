@@ -13,12 +13,24 @@ export default function Navbar() {
         <span className="navbar-brand">CSD Central</span>
       </div>
       <ul className="navbar-links">
-        <li><span className="navbar-link-placeholder">Home</span></li>
-        <li><span className="navbar-link-placeholder">Calendar</span></li>
-        <li><span className="navbar-link-placeholder">Certifications</span></li>
-        <li><span className="navbar-link-placeholder">Logs</span></li>
         <li>
-          <Link to="/profile" className="navbar-link">Profile</Link>
+          <span className="navbar-link-placeholder">Home</span>
+        </li>
+        <li>
+          <Link to="/calendar" className="navbar-link">
+            Calendar
+          </Link>
+        </li>
+        <li>
+          <span className="navbar-link-placeholder">Certifications</span>
+        </li>
+        <li>
+          <span className="navbar-link-placeholder">Logs</span>
+        </li>
+        <li>
+          <Link to="/profile" className="navbar-link">
+            Profile
+          </Link>
         </li>
       </ul>
     </nav>

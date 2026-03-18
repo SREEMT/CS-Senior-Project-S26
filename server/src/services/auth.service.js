@@ -15,5 +15,6 @@ export async function login(email, password) {
         throw new Error("Invalid credentials");
     }
 
-    return signJWT({ userId: user.id });
+    // Include role so frontend can distinguish admins
+    return signJWT({ userId: user.id, role: user.role });
 }
