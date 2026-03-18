@@ -4,6 +4,8 @@ import { userRoutes } from "./routes/user.routes.js";
 import { dogRoutes } from "./routes/dog.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
+// import { certificationRoutes } from "./routes/certification.routes.js";
+import { commLogRoutes } from "./routes/commLog.routes.js";
 import { eventRoutes } from "./routes/event.routes.js";
 
 import dotenv from "dotenv";
@@ -29,6 +31,7 @@ serve({
             (await authRoutes(req)) ??
             (await dogRoutes(req)) ??
             (await adminRoutes(req)) ??
+            (await commLogRoutes(req)) ??
             (await eventRoutes(req)) ??
             null;
         return res ?? new Response("Not Found", { status: 404 });

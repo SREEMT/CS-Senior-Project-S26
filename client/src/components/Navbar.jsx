@@ -25,7 +25,7 @@ export default function Navbar() {
           <span className="navbar-link-placeholder">Certifications</span>
         </li>
         <li>
-          <span className="navbar-link-placeholder">Logs</span>
+          <Link to="/logs" className="navbar-link">Logs</Link>
         </li>
         <li>
           <Link to="/profile" className="navbar-link">

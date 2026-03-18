@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
+import LogsPage from "./pages/LogsPage";
 import Calendar from "./pages/Calendar";
 
 function App() {
@@ -14,6 +15,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="logs" element={ <ProtectedRoute>
+            <LogsPage />
+        </ProtectedRoute>}/>
         <Route element={<AuthenticatedLayout />}>
           <Route
             path="calendar"
