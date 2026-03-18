@@ -7,7 +7,7 @@ describe("Auth service - login", () => {
   beforeEach(async () => {
     mock.restore();
 
-    // default mocks: user exists, password matches, JWT signing returns token
+    //user exists, password matches, JWT signing returns token
     mock.module("../../src/models/user.model.js", () => {
       return {
         findUserByEmail: async (email) => ({
@@ -27,7 +27,9 @@ describe("Auth service - login", () => {
 
     mock.module("../../src/utils/jwt.js", () => {
       return {
+        __esModule: true,
         signJWT: (payload) => `signed-token-for-${payload.userId}`,
+        verifyJWT: () => ({}),
       };
     });
   });
@@ -57,7 +59,9 @@ describe("Auth service - login", () => {
 
     mock.module("../../src/utils/jwt.js", () => {
       return {
+        __esModule: true,
         signJWT: () => "should-not-be-called",
+        verifyJWT: () => ({}),
       };
     });
 
@@ -90,7 +94,9 @@ describe("Auth service - login", () => {
 
     mock.module("../../src/utils/jwt.js", () => {
       return {
+        __esModule: true,
         signJWT: () => "should-not-be-called",
+        verifyJWT: () => ({}),
       };
     });
 

@@ -1,15 +1,16 @@
 // Tests the controller layer for user
 
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { describe, it, expect, beforeEach } from "bun:test";
 
-let registerController, updateController;
+let registerController, updateController, getMeController;
 
 describe("User controller tests", () => {
     beforeEach(async () => {
-        // Each test re-imports to get fresh handlers
+        // Each test re-imports
         const mod = await import("../../src/controllers/user.controller.js");
         registerController = mod.registerController;
         updateController = mod.updateController;
+        getMeController = mod.getMeController;
     });
 
     const validUser = {
@@ -26,11 +27,6 @@ describe("User controller tests", () => {
     };
 
     it("returns 201 when user is succesfully created", async () => {
-        /**
-         * NOTE: This test demonstrates the controller's happy path.
-         * It assumes the service layer is working correctly.
-         * Integration tests would verify the full flow with real services.
-         */
         const req = new Request("http://localhost/api/users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -39,16 +35,11 @@ describe("User controller tests", () => {
 
         const res = await registerController(req);
         
-        // Just verify the response structure; real service tests handle validation
         expect(res).toBeDefined();
         expect(typeof res.status).toBe("number");
     });
 
     it("Returns 400 when server error occurs", async () => {
-        /**
-         * NOTE: This is a simplified test. Real error handling and service validation
-         * are tested in the service layer tests.
-         */
         const req = new Request("http://localhost/api/users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,5 +66,26 @@ describe("User controller tests", () => {
         
         expect(res).toBeDefined();
         expect(typeof res.status).toBe("number");
+    });
+
+    it("Returns 400 when update body is invalid JSON", async () => {
+        // req.json() will throw if body isn't valid JSON
+        const req = new Request("http://localhost/api/users/1", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: "{",
+        });
+
+        const res = await updateController(req, { params: { id: "1" } });
+        expect(res.status).toBe(400);
+    });
+
+    it("Returns 200 and current user for getMeController", async () => {
+        const req = new Request("http://localhost/api/users/me", { method: "GET" });
+        req.user = { id: "user-1", role: "user" };
+
+        const res = await getMeController(req);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({ id: "user-1", role: "user" });
     });
 });

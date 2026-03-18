@@ -2,15 +2,7 @@
 
 import { describe, it, expect, beforeEach, mock } from "bun:test";
 
-// we'll dynamically import the model after mocking it so the real mongoose
-// logic never runs.  the store variable lets us simulate a simple in-memory
-// collection.
-let createUser,
-    findUserByUsername,
-    findUserByEmail,
-    updateUserModel,
-    deleteUser,
-    clearUsers;
+let createUser, findUserByUsername, findUserByEmail, updateUserModel, deleteUser;
 
 const validUser = {
     username: "test",
@@ -27,41 +19,91 @@ const validUser = {
 
 describe("User model tests", () => {
     beforeEach(async () => {
-        // reset mocks and recreate module so each test gets a fresh store
         mock.restore();
-        mock.module("../../src/models/user.model.js", () => {
-            let store = [];
+
+        // Mock mongoose so the model module executes and counts toward coverage
+        let store = [];
+
+        const mkDoc = (obj) => {
+            const _id = obj._id ?? `u-${store.length + 1}`;
             return {
-                createUser: async (user) => {
-                    const u = { ...user, id: Date.now().toString() };
-                    store.push(u);
-                    return u;
-                },
-                findUserByUsername: async (username) =>
-                    store.find((u) => u.username === username) || null,
-                findUserByEmail: async (email) =>
-                    store.find((u) => u.email === email) || null,
-                updateUserModel: async (id, updates) => {
-                    const u = store.find((u) => u.id === id);
-                    if (!u) return null;
-                    Object.assign(u, updates);
-                    return u;
-                },
-                deleteUser: async (id) => {
-                    store = store.filter((u) => u.id !== id);
-                },
-                clearUsers: async () => {
-                    store = [];
-                },
+                ...obj,
+                _id: { toString: () => String(_id) },
+                toObject: () => ({ ...obj, _id: { toString: () => String(_id) } }),
             };
-        });
-        const mod = await import("../../src/models/user.model.js");
+        };
+
+        const User = {
+            create: async (doc) => {
+                const created = mkDoc({ ...doc, _id: `u-${store.length + 1}` });
+                store.push(created);
+                return created;
+            },
+            findOne: async (query) => {
+                if (query?.username) {
+                    return store.find((u) => u.username === query.username) ?? null;
+                }
+                if (query?.email) {
+                    return (
+                        store.find((u) => u.email === query.email) ??
+                        store.find((u) => String(u.email).toLowerCase() === query.email) ??
+                        null
+                    );
+                }
+                return null;
+            },
+            findById: (id) => ({
+                select: () => store.find((u) => u._id.toString() === String(id)) ?? null,
+            }),
+            findByIdAndUpdate: (id, updates) => ({
+                select: () => {
+                    const idx = store.findIndex((u) => u._id.toString() === String(id));
+                    if (idx === -1) return null;
+                    const existing = store[idx];
+                    const merged = mkDoc({
+                        ...existing.toObject(),
+                        ...updates,
+                        _id: existing._id.toString(),
+                    });
+                    store[idx] = merged;
+                    return merged;
+                },
+            }),
+            findByIdAndDelete: async (id) => {
+                const idx = store.findIndex((u) => u._id.toString() === String(id));
+                if (idx === -1) return null;
+                const [deleted] = store.splice(idx, 1);
+                return deleted;
+            },
+            deleteMany: async () => {
+                store = [];
+            },
+            find: () => ({
+                select: () => ({
+                    lean: async () => store.map((u) => u.toObject()),
+                }),
+            }),
+        };
+
+        mock.module("mongoose", () => ({
+            default: {
+                Schema: class Schema {
+                    constructor(def, opts) {
+                        this.def = def;
+                        this.opts = opts;
+                    }
+                },
+                model: () => User,
+            },
+        }));
+
+        // Cache-bust
+        const mod = await import(`../../src/models/user.model.js?test=${Date.now()}`);
         createUser = mod.createUser;
         findUserByUsername = mod.findUserByUsername;
         findUserByEmail = mod.findUserByEmail;
         updateUserModel = mod.updateUserModel;
         deleteUser = mod.deleteUser;
-        clearUsers = mod.clearUsers;
     });
     
     it("stores and retrieves a user by username", async () => {
