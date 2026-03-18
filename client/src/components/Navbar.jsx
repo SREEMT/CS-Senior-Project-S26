@@ -16,7 +16,9 @@ export default function Navbar() {
         <li><span className="navbar-link-placeholder">Home</span></li>
         <li><span className="navbar-link-placeholder">Calendar</span></li>
         <li><span className="navbar-link-placeholder">Certifications</span></li>
-        <li><span className="navbar-link-placeholder">Logs</span></li>
+        <li>
+          <Link to="/logs" className="navbar-link">Logs</Link>
+        </li>
         <li>
           <Link to="/profile" className="navbar-link">Profile</Link>
         </li>

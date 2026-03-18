@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 const commLogSchema = new mongoose.Schema(
     {
         eventId: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.Mixed,
             required: true,
             ref: "Event",
         },
@@ -58,7 +58,7 @@ const commLogSchema = new mongoose.Schema(
 
 const CommunicationLog = mongoose.model(
     "CommunicationLog",
-    communicationLogSchema
+    commLogSchema
 );
 
 export default CommunicationLog;

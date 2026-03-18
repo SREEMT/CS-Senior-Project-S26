@@ -16,7 +16,7 @@ export async function logComm(user, data) {
 
     return await createCommLog({
         ...data,
-        userId: usser._id,
+        userId: user._id,
     });
 }
 
