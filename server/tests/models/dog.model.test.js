@@ -14,4 +14,4 @@ describe("Dog Model", () => {
 
     expect(err).toBeDefined();
   });
-});
+}); 
