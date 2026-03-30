@@ -30,11 +30,18 @@ export async function getEventLogsController(req) {
 }
 
 // Delete a log controller, called by routes
-export async function deleteLogController(req) {
+export async function deleteLogController(req, { params } = {}) {
     const url = new URL(req.url);
-    const id = url.searchParams.get("id");
+    const id = params?.id ?? url.searchParams.get("id");
 
-    await deleteComm(id);
+    if (!id) {
+        return new Response(JSON.stringify({ error: "Log ID is required" }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    await deleteComm(req.user, id);
 
     return Response.json({ success: true });
 }

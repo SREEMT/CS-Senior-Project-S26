@@ -42,3 +42,26 @@ export async function getAllDogsLean() {
 export async function deleteDog(dogId) {
   return await Dog.findByIdAndDelete(dogId);
 }
+
+// Throws if the dog doesn't exist or is already owned.
+export async function assignDogToOwner(dogId, ownerId) {
+  const dog = await Dog.findById(dogId);
+  if (!dog) {
+    throw new Error("Dog not found");
+  }
+
+  dog.ownerId = ownerId;
+  if (typeof dog.save === "function") {
+    await dog.save();
+  }
+
+  return {
+    id: dog._id ? dog._id.toString() : String(dogId),
+    name: dog.name,
+    birthDate: dog.birthDate,
+    vet: dog.vet,
+    status: dog.status,
+    color: dog.color,
+    ownerId,
+  };
+}

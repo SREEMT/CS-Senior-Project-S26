@@ -102,5 +102,49 @@ describe("adminRoutes", () => {
     const res = await adminRoutes(req);
     expect(res.status).toBe(200);
   });
+
+  it("returns 401 when not authenticated for attaching a dog", async () => {
+    mock.module("../../src/middleware/auth.middleware.js", () => ({
+      requireAuth: async () =>
+        new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }),
+      requireAdmin: (req, next) => next(req),
+    }));
+
+    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const req = new Request("http://localhost/api/admin/users/u1/dogs/d1/attach", {
+      method: "POST",
+    });
+
+    const res = await adminRoutes(req);
+    expect(res.status).toBe(401);
+  });
+
+  it("calls attachDogToUserController for authenticated admin attach", async () => {
+    mock.module("../../src/middleware/auth.middleware.js", () => ({
+      requireAuth: async (_req, next) =>
+        next({ user: { id: "admin-1", role: "admin" } }),
+      requireAdmin: (req, next) => next(req),
+    }));
+
+    mock.module("../../src/controllers/user.controller.js", () => ({
+      getAllUsersController: async () =>
+        new Response(JSON.stringify([{ id: "1" }]), { status: 200 }),
+      deleteUserController: async () =>
+        new Response(JSON.stringify({ deleted: true }), { status: 200 }),
+      attachDogToUserController: async () =>
+        new Response(JSON.stringify({ message: "Dog attached" }), { status: 200 }),
+    }));
+
+    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const req = new Request("http://localhost/api/admin/users/u1/dogs/d1/attach", {
+      method: "POST",
+    });
+
+    const res = await adminRoutes(req);
+    expect(res.status).toBe(200);
+  });
 });
 

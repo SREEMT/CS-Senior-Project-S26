@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAdminUsers, deleteAdminUser, deleteAdminDog } from "../services/admin";
+import {
+  getAdminUsers,
+  deleteAdminUser,
+  deleteAdminDog,
+  attachDogToUser,
+} from "../services/admin";
 import { logout } from "../services/auth";
 import "./AdminUsers.css";
 
@@ -11,6 +16,8 @@ export default function AdminUsers() {
   const [message, setMessage] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [deletingDogId, setDeletingDogId] = useState(null);
+  const [attachingDogId, setAttachingDogId] = useState(null);
+  const [selectedOwnerByDogId, setSelectedOwnerByDogId] = useState({});
 
   useEffect(() => {
     loadUsers();
@@ -71,6 +78,35 @@ export default function AdminUsers() {
       setMessage(err.message || "Failed to delete dog");
     } finally {
       setDeletingDogId(null);
+    }
+  }
+
+  async function handleAttachDog(dogId, ownerUserId) {
+    if (!ownerUserId) {
+      setMessage("Please select a user first.");
+      return;
+    }
+
+    const dogName = standaloneDogs.find((d) => d.id === dogId)?.name ?? "this dog";
+    if (
+      !window.confirm(
+        `Attach "${dogName}" to this user? This cannot be undone from this page.`
+      )
+    ) {
+      return;
+    }
+
+    setAttachingDogId(dogId);
+    setMessage(null);
+    try {
+      await attachDogToUser(ownerUserId, dogId);
+      setSelectedOwnerByDogId((prev) => ({ ...prev, [dogId]: "" }));
+      await loadUsers();
+      setMessage("Dog attached.");
+    } catch (err) {
+      setMessage(err.message || "Failed to attach dog");
+    } finally {
+      setAttachingDogId(null);
     }
   }
 
@@ -196,6 +232,7 @@ export default function AdminUsers() {
                     <th>Veterinarian</th>
                     <th>Status</th>
                     <th>Color</th>
+                    <th>Assign to</th>
                     <th aria-label="Actions" />
                   </tr>
                 </thead>
@@ -207,6 +244,39 @@ export default function AdminUsers() {
                       <td>{d.vet ?? "—"}</td>
                       <td>{d.status ?? "—"}</td>
                       <td>{d.color ?? "—"}</td>
+                      <td>
+                        <div className="admin-users-attach">
+                          <select
+                            className="admin-users-assign-select"
+                            value={selectedOwnerByDogId[d.id] ?? ""}
+                            onChange={(e) =>
+                              setSelectedOwnerByDogId((prev) => ({
+                                ...prev,
+                                [d.id]: e.target.value,
+                              }))
+                            }
+                            disabled={attachingDogId != null}
+                            aria-label={`Assign ${d.name} to a user`}
+                          >
+                            <option value="" disabled>
+                              Select user
+                            </option>
+                            {users.map((u) => (
+                              <option value={u.id} key={u.id}>
+                                {u.name} ({u.username})
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            className="btn-primary admin-users-attach-btn"
+                            disabled={attachingDogId != null || !selectedOwnerByDogId[d.id]}
+                            onClick={() => handleAttachDog(d.id, selectedOwnerByDogId[d.id])}
+                          >
+                            {attachingDogId === d.id ? "Attaching…" : "Attach"}
+                          </button>
+                        </div>
+                      </td>
                       <td>
                         <button
                           type="button"

@@ -13,6 +13,10 @@ describe("Dog service - create & queries", () => {
             store.push(doc);
             return doc;
           },
+          findById: async (id) => {
+            const found = store.find((d) => d._id === id);
+            return found ?? null;
+          },
           find: async (query = {}) => {
             if (query.ownerId) {
               return store.filter((d) => d.ownerId === query.ownerId);
@@ -132,6 +136,26 @@ describe("Dog service - create & queries", () => {
 
     expect(deleted).not.toBeNull();
     expect(deleted._id).toBe("dog-1");
+  });
+
+  it("assigns an unowned dog to an owner", async () => {
+    const mod = await import("../../src/services/dog.service.js");
+    const { createDog, assignDogToOwner } = mod;
+
+    await createDog({ name: "UnownedDog" });
+    const dog = await assignDogToOwner("dog-1", "owner-1");
+
+    expect(dog.ownerId).toBe("owner-1");
+  });
+
+  it("re-assigns a dog even if it already has an owner", async () => {
+    const mod = await import("../../src/services/dog.service.js");
+    const { createDog, assignDogToOwner } = mod;
+
+    await createDog({ name: "OwnedDog", ownerId: "owner-1" });
+
+    const dog = await assignDogToOwner("dog-1", "owner-2");
+    expect(dog.ownerId).toBe("owner-2");
   });
 });
 

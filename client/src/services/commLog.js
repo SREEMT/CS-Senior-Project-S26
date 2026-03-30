@@ -38,12 +38,11 @@ export async function createCommunicationLog(data) {
 }
 
 export async function getCommunicationLogs(eventId) {
-  const res = await fetch(
-    `${API_BASE}/communications?eventId=${eventId}`,
-    {
-      headers: authHeaders(),
-    }
-  );
+  const url = eventId
+    ? `${API_BASE}/communications?eventId=${encodeURIComponent(eventId)}`
+    : `${API_BASE}/communications`;
+
+  const res = await fetch(url, { headers: authHeaders() });
 
   if (!res.ok) {
     throw new Error("Failed to fetch logs");

@@ -7,7 +7,7 @@ const commLogSchema = new mongoose.Schema(
     {
         eventId: {
             type: mongoose.Schema.Types.Mixed,
-            required: true,
+            required: false,
             ref: "Event",
         },
 
@@ -21,6 +21,18 @@ const commLogSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Dog",
             default: null,
+        },
+
+        title: {
+            type: String,
+            required: false,
+            trim: true,
+        },
+
+        body: {
+            type: String,
+            required: false,
+            trim: true,
         },
 
         type: {
@@ -37,7 +49,7 @@ const commLogSchema = new mongoose.Schema(
 
         message: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
         },
 
@@ -67,13 +79,17 @@ export default CommunicationLog;
 export async function createCommLog(data) {
     const trim = (v) => (v != null ? String(v).trim() : undefined);
 
+    const body = trim(data.body ?? data.message);
     const doc = {
-        eventId: data.eventId,
+        eventId: data.eventId ?? null,
         userId: data.userId,
         dogId: data.dogId ?? null,
         type: trim(data.type),
         priority: trim(data.priority),
-        message: trim(data.message),
+        title: trim(data.title),
+        body,
+
+        message: body,
         location: trim(data.location),
         radioChannel: trim(data.radioChannel),
     };
@@ -88,12 +104,19 @@ export async function createCommLog(data) {
 
 // Find Logs by event
 export async function findLogByEvent(eventId) {
-    const logs = await CommunicationLog.find({ eventId })
+    const query = eventId ? { eventId } : {};
+
+    const logs = await CommunicationLog.find(query)
+        .populate("userId", "name")
         .sort({ createdAt: -1 })
         .lean();
     
     return logs.map((l) => ({
         ...l,
+        userName: l.userId?.name ?? "Unknown",
+        userId: l.userId?._id ? l.userId._id.toString() : l.userId?.toString?.() ?? null,
+        title: l.title ?? "Untitled",
+        body: l.body ?? l.message ?? "",
         id: l._id.toString(),
         _id: undefined,
     }));

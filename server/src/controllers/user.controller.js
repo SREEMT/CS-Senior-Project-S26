@@ -117,3 +117,27 @@ export async function deleteUserController(req, { params }) {
         );
     }
 }
+
+//attach an unowned dog to a user (admin only)
+export async function attachDogToUserController(req, { params }) {
+    try {
+        const { userId, dogId } = params;
+
+        // Validate user exists
+        await getUserById(userId);
+
+        const dog = await dogService.assignDogToOwner(dogId, userId);
+        return new Response(JSON.stringify({ message: "Dog attached", dog }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (err) {
+        let status = 500;
+        if (err.message === "User not found") status = 404;
+        if (err.message === "Dog not found") status = 404;
+        return new Response(JSON.stringify({ error: err.message }), {
+            status,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}

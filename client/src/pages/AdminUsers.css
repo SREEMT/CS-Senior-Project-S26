@@ -154,3 +154,26 @@
   font-size: 1.1rem;
   color: var(--text-primary);
 }
+
+.admin-users-attach {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-users-assign-select {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+  max-width: 220px;
+}
+
+.admin-users-attach-btn.btn-primary {
+  width: auto;
+  margin-top: 0;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}

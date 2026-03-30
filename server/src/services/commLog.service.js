@@ -6,25 +6,25 @@ import {
 } from "../models/commLog.model.js";
 
 export async function logComm(user, data) {
-    if (!data.eventId) {
-        throw new Error("Event ID is required");
-    }
+    const trim = (v) => (v != null ? String(v).trim() : "");
 
-    if (!data.message || !data.message.trim()) {
-        throw new Error("Message is required");
-    }
+    if (!user?._id) throw new Error("Unauthorized");
+
+    const title = trim(data?.title);
+    const body = trim(data?.body ?? data?.message);
+
+    if (!title) throw new Error("Title is required");
+    if (!body) throw new Error("Body is required");
 
     return await createCommLog({
         ...data,
+        title,
+        body,
         userId: user._id,
     });
 }
 
 export async function getEventComm(eventId) {
-    if (!eventId) {
-        throw new Error("Event ID is required");
-    }
-
     return await findLogByEvent(eventId);
 }
 
@@ -35,10 +35,8 @@ export async function deleteComm(user, logId) {
         throw new Error("Log not found");
     }
 
-    if (
-        log.userId.toString() !== user._id.toString() &&
-        user.role !== "admin"
-    ) {
+    // Only allow users to delete their own communication logs.
+    if (log.userId?.toString() !== user._id?.toString()) {
         throw new Error("Unauthorized");
     }
 

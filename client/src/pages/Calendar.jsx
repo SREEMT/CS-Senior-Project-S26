@@ -43,6 +43,7 @@ export default function Calendar() {
     startTime: "",
     endTime: "",
     description: "",
+    location: "",
   });
   const [notes, setNotes] = useState({});
   const [myRsvps, setMyRsvps] = useState({});
@@ -120,6 +121,7 @@ export default function Calendar() {
       startTime: "",
       endTime: "",
       description: "",
+      location: "",
     });
   }
 
@@ -169,6 +171,7 @@ export default function Calendar() {
       id: ev.id,
       title: ev.title,
       description: ev.description ?? "",
+      location: ev.location ?? "",
       date: start.toISOString().slice(0, 10),
       startTime: start.toTimeString().slice(0, 5),
       endTime: end.toTimeString().slice(0, 5),
@@ -189,6 +192,7 @@ export default function Calendar() {
     const payload = {
       title: form.title,
       description: form.description,
+      location: form.location,
       startTime: start.toISOString(),
       endTime: end.toISOString(),
     };
@@ -266,13 +270,16 @@ export default function Calendar() {
     if (!iso) return "";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "";
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const year = d.getFullYear();
     let hours = d.getHours();
     const minutes = String(d.getMinutes()).padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
     hours %= 12;
     if (hours === 0) hours = 12;
     const hh = String(hours).padStart(2, "0");
-    return `${hh}:${minutes} ${ampm}`;
+    return `${month}/${day}/${year} ${hh}:${minutes} ${ampm}`;
   }
 
   const monthLabel = currentMonth.toLocaleString(undefined, {
@@ -399,6 +406,12 @@ export default function Calendar() {
                     value={form.description}
                     onChange={handleFieldChange}
                     rows={3}
+                  />
+                  <input
+                    name="location"
+                    placeholder="Location"
+                    value={form.location}
+                    onChange={handleFieldChange}
                   />
                   <div className="calendar-form-actions">
                     <button type="submit" disabled={savingEvent}>

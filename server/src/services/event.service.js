@@ -40,6 +40,7 @@ export async function createEventForAdmin(user, payload) {
   return createEvent({
     title: String(payload.title).trim(),
     description: String(payload.description ?? "").trim(),
+    location: String(payload.location ?? "").trim(),
     startTime,
     endTime,
     createdBy: user.id,
@@ -70,6 +71,10 @@ export async function updateEventForAdmin(user, id, payload) {
     const d = new Date(payload.endTime);
     if (Number.isNaN(d.getTime())) throw new Error("Invalid end time");
     updates.endTime = d;
+  }
+
+  if (payload.location !== undefined) {
+    updates.location = payload.location == null ? "" : String(payload.location).trim();
   }
 
   if (updates.startTime && updates.endTime && updates.endTime < updates.startTime) {
