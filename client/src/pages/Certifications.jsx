@@ -105,7 +105,7 @@ function Certifications() {
           <p>Issuer: {cert.issuer || "N/A"}</p>
 
           <a
-            href={`http://localhost:3049/api/certifications/${cert._id}/file`}
+            href={`/api/certifications/${cert._id}/file?token=${localStorage.getItem("token")}`}
             target="_blank"
           >
             View PDF
