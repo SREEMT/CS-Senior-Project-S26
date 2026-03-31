@@ -34,3 +34,29 @@ export async function deleteAdminUser(userId) {
   }
   return res.json();
 }
+
+export async function deleteAdminDog(dogId) {
+  const res = await fetch(`${API_BASE}/dogs/${dogId}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to delete dog");
+  }
+  return res.json();
+}
+
+export async function attachDogToUser(userId, dogId) {
+  const res = await fetch(`${API_BASE}/admin/users/${userId}/dogs/${dogId}/attach`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to attach dog");
+  }
+
+  return res.json();
+}

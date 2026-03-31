@@ -111,7 +111,7 @@ export async function findUserById(id) {
 
 export async function updateUserModel(id, updates) {
   const user = await User.findByIdAndUpdate(id, updates, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   }).select("-password");
 
@@ -134,7 +134,7 @@ export async function findUserByUsername(username) {
   return obj;
 }
 
-/** Get all users (no password). For admin use. */
+/** Get all users for admin use. */
 export async function findAllUsers() {
   const users = await User.find().select("-password").lean();
   return users.map((u) => ({

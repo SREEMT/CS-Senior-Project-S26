@@ -9,8 +9,9 @@ import {
     getAllUsers,
     deleteUserById,
 } from "../services/user.service.js";
+import * as dogService from "../services/dog.service.js";
 
-// POST /api/users
+// POST /api/users (via /api/auth/register)
 // Creates new user (registration)
 export async function registerController(req) {
     try {
@@ -75,14 +76,23 @@ export async function getUserController(req, { params }) {
     }
 }
 
-// GET /api/admin/users – list all users (admin only)
+// GET /api/admin/users – list all users with their dogs (admin only)
 export async function getAllUsersController(req) {
     try {
         const users = await getAllUsers();
-        return new Response(JSON.stringify(users), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
+        const allDogs = await dogService.getAllDogsLean();
+        const usersWithDogs = users.map((u) => ({
+            ...u,
+            dogs: allDogs.filter((d) => d.ownerId === u.id),
+        }));
+        const standaloneDogs = allDogs.filter((d) => !d.ownerId);
+        return new Response(
+            JSON.stringify({ users: usersWithDogs, standaloneDogs }),
+            {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }
+        );
     } catch (err) {
         return new Response(
             JSON.stringify({ error: err.message }),
@@ -105,5 +115,29 @@ export async function deleteUserController(req, { params }) {
             JSON.stringify({ error: err.message }),
             { status, headers: { "Content-Type": "application/json" } }
         );
+    }
+}
+
+//attach an unowned dog to a user (admin only)
+export async function attachDogToUserController(req, { params }) {
+    try {
+        const { userId, dogId } = params;
+
+        // Validate user exists
+        await getUserById(userId);
+
+        const dog = await dogService.assignDogToOwner(dogId, userId);
+        return new Response(JSON.stringify({ message: "Dog attached", dog }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (err) {
+        let status = 500;
+        if (err.message === "User not found") status = 404;
+        if (err.message === "Dog not found") status = 404;
+        return new Response(JSON.stringify({ error: err.message }), {
+            status,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 }
