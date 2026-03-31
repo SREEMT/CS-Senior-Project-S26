@@ -5,6 +5,7 @@ import { createDeflate } from "zlib";
 import { connectDB } from "../config/db.js";
 import { ObjectId, GridFSBucket } from "mongodb";        //Gridfs is needed to store pdfs in mongodb and allows file streaming
 import { file } from "bun";
+import { resolve } from "dns";
 
 // Certification schema definition
 const certificationSchema = {
@@ -13,7 +14,7 @@ const certificationSchema = {
     issuer: "string",
     issueDate: "date",
     expirationDate: "date",
-    fileId: "ObjecyId"
+    fileId: "ObjectId"
 };
 
 // create collection and get from db
@@ -26,12 +27,15 @@ async function collection() {
 function validateCertification(data) {
     if (!data.userId) throw new Error("userId required");
     if (!data.title) throw new Error("title required");
+    if (!data.fileId) throw new Error("fileId required");
 }
 
 // Normalize certification document
 function normalizeDoc(data) {
     return {
-        userId: new ObjectId(data.userId),
+        userId: ObjectId.isValid(data.userId)
+            ? new ObjectId(data.userId)
+            : data.userId,
         title: data.title,
         issuer: data.issuer ?? null,
         issueDate: data.issueDate ? new Date(data.issueDate) : null,
@@ -120,12 +124,20 @@ export async function deleteCertFile(fileId) {
 // Upload to GridFS
 export async function uploadCertFile(filename, buffer) {
     const bucket = await getCertBucket();
-    const uploadStream = bucket.openUploadStream(filename, {
-        contentType: "application/pdf"
-    });
+    
+    return new Promise((resolve, reject) => {
+        const uploadStream = bucket.openUploadStream(filename, {
+            contentType: "application/pdf"
+        });
 
-    uploadStream.end(buffer);
-    return uploadStream.id;
+        uploadStream.end(buffer);
+
+        uploadStream.on("finish", () => {
+            resolve(uploadStream.id);
+        });
+
+        uploadStream.on("error", reject);
+    });
 }
 
 export{ certificationSchema };

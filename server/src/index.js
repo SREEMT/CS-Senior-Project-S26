@@ -32,6 +32,10 @@ serve({
             (await authRoutes(req)) ??
             (await dogRoutes(req)) ??
             (await adminRoutes(req)) ??
+            (await certificationRoutes(req)) ??
+            (await commLogRoutes(req)) ??
+            (await eventRoutes(req)) ??
+            (await trainingLogRoutes(req)) ??
             null;
         return res ?? new Response("Not Found", { status: 404 });
     }
