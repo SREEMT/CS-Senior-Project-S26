@@ -4,7 +4,7 @@ import { userRoutes } from "./routes/user.routes.js";
 import { dogRoutes } from "./routes/dog.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
-// import { certificationRoutes } from "./routes/certification.routes.js";
+import { certificationRoutes } from "./routes/certification.routes.js";
 import { commLogRoutes } from "./routes/commLog.routes.js";
 import { eventRoutes } from "./routes/event.routes.js";
 import { trainingLogRoutes } from "./routes/trainingLog.routes.js";
@@ -20,7 +20,7 @@ dotenv.config({ path: join(__dirname, "..", ".env") });
 // Will implement .env
 import { connectDB } from "./config/db.js";
 console.log("MONGO_URI:", process.env.MONGO_URI);
-connectDB();
+await connectDB();
 const PORT = 3049;
 
 // Serve method to start API
@@ -32,6 +32,7 @@ serve({
             (await authRoutes(req)) ??
             (await dogRoutes(req)) ??
             (await adminRoutes(req)) ??
+            (await certificationRoutes(req)) ??
             (await commLogRoutes(req)) ??
             (await eventRoutes(req)) ??
             (await trainingLogRoutes(req)) ??

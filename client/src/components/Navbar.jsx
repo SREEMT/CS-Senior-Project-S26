@@ -22,7 +22,9 @@ export default function Navbar() {
           </Link>
         </li>
         <li>
-          <span className="navbar-link-placeholder">Certifications</span>
+          <Link to="/certifications" className="navbar-link">
+            Certifications
+          </Link>
         </li>
         <li>
           <Link to="/logs" className="navbar-link">Logs</Link>

@@ -8,6 +8,7 @@ import Profile from "./pages/Profile";
 import AdminUsers from "./pages/AdminUsers";
 import LogsPage from "./pages/LogsPage";
 import Calendar from "./pages/Calendar";
+import Certifications from "./pages/Certifications";
 
 function App() {
   return (
@@ -35,7 +36,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          <Route path="/certifications" element={<ProtectedRoute><Certifications /></ProtectedRoute>} />
+        <Route
             path="admin/users"
             element={
               <AdminRoute>

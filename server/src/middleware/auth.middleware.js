@@ -2,9 +2,16 @@ import { verifyJWT } from "../utils/jwt.js";
 import { findUserById } from "../models/user.model.js";
 
 export async function requireAuth(req, next) {
+    const url = new URL(req.url);
     const auth = req.headers.get("authorization");
+    // Allow token to be passed as query param for file download links
+    const tokenParam = url.searchParams.get("token");
 
-    if (!auth?.startsWith("Bearer ")) {
+    const token = auth?.startsWith("Bearer ")
+        ? auth.split(" ")[1]
+        : tokenParam;
+
+    if (!token) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
@@ -12,7 +19,6 @@ export async function requireAuth(req, next) {
     }
 
     try {
-        const token = auth.split(" ")[1];
         const payload = verifyJWT(token);
 
         const user = await findUserById(payload.userId);
