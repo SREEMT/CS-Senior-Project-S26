@@ -8,6 +8,7 @@ import { certificationRoutes } from "./routes/certification.routes.js";
 import { commLogRoutes } from "./routes/commLog.routes.js";
 import { eventRoutes } from "./routes/event.routes.js";
 import { trainingLogRoutes } from "./routes/trainingLog.routes.js";
+import { searchRoutes } from "./routes/search.routes.js";
 
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
@@ -38,6 +39,7 @@ serve({
             (await commLogRoutes(req)) ??
             (await eventRoutes(req)) ??
             (await trainingLogRoutes(req)) ??
+            (await searchRoutes(req)) ??
             null;
         return res ?? new Response("Not Found", { status: 404 });
     }
