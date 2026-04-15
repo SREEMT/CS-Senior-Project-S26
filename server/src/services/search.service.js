@@ -3,17 +3,32 @@ import TrainingLog from "../models/trainingLog.model";
 import { connectDB } from "../config/db";
 
 import { buildSearchQuery } from "../utils/searchQuery";
-import { buildFilterQuery } from "../utils/filterQuery";
+import { buildFilterQuery, buildCreatedAtRangeQuery, buildTrainingDateRangeQuery } from "../utils/filterQuery";
 import { buildSort } from "../utils/sortQuery";
 
 export async function searchAll({ query, filters }) {
     const searchQuery = buildSearchQuery(query);
     const filterQuery = buildFilterQuery(filters);
+    const createdAtRangeQuery = buildCreatedAtRangeQuery(filters);
+    const trainingDateRangeQuery = buildTrainingDateRangeQuery(filters);
     const hasQuery = !!query;
 
-    const mongoQuery = {
+    const commQuery = {
         ...searchQuery,
-        ...filterQuery
+        ...filterQuery,
+        ...createdAtRangeQuery
+    };
+
+    const trainingQuery = {
+        ...searchQuery,
+        ...filterQuery,
+        ...trainingDateRangeQuery
+    };
+
+    const certQuery = {
+        ...searchQuery,
+        ...filterQuery,
+        ...createdAtRangeQuery
     };
 
     const sort = buildSort({ sortBy: filters.sortBy, hasQuery });
@@ -22,21 +37,22 @@ export async function searchAll({ query, filters }) {
     const certCollection = conn.db.collection("certifications");
 
     const [comms, training, certs] = await Promise.all([
-        CommunicationLog.find(mongoQuery)
+        CommunicationLog.find(commQuery)
             .sort(sort)
             .lean(),
 
-        TrainingLog.find(mongoQuery)
+        TrainingLog.find(trainingQuery)
             .sort(sort)
             .lean(),
 
-        certCollection.find(mongoQuery).sort(sort).toArray()
+        certCollection.find(certQuery).sort(sort).toArray()
     ]);
 
     let results = [
         ...comms.map(c => ({
             id: c._id.toString(),
-            type: c.title || "Untitled",
+            type: "communication_log",
+            title: c.title || "Untitled",
             createdAt: c.createdAt,
             updatedAt: c.updatedAt
         })),

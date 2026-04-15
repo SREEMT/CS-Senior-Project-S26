@@ -8,11 +8,11 @@ export async function searchController(req) {
         const query = url.searchParams.get("q") || "";
 
         const filters = {
-            userId: url.searchParams.get("userId"),
-            dogId: url.searchParams.get("dogId"),
-            type: url.searchParams.get("type"),         //training_log or communication_log
-            logType: url.searchParams.get("logType"),   // comm log subtype
-            sortBy: url.searchParams.get("sortBy")      // createdAt or updatedAr 
+            type: url.searchParams.get("type"),         // training_log, communication_log, or certification
+            logType: url.searchParams.get("logType") || url.searchParams.get("radio"),   // comm log subtype
+            sortBy: url.searchParams.get("sortBy"),     // recent, oldest, or updatedAt
+            startDate: url.searchParams.get("startDate"),
+            endDate: url.searchParams.get("endDate")
         };
 
         const results = await searchAll({ query, filters });
