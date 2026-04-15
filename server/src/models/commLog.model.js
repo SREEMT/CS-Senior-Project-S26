@@ -68,6 +68,30 @@ const commLogSchema = new mongoose.Schema(
     }
 );
 
+// Indexing shchema for search with weights for priority
+commLogSchema.index(
+  {
+    title: "text",
+    body: "text",
+    message: "text",
+    type: "text",
+    priority: "text",
+    location: "text",
+    radioChannel: "text"
+  },
+  {
+    weights: {
+      title: 6,
+      body: 4,
+      message: 4,
+      type: 2,
+      priority: 2,
+      location: 1,
+      radioChannel: 1
+    },
+    name: "CommLogTextIndex"
+  }
+);
 const CommunicationLog = mongoose.model(
     "CommunicationLog",
     commLogSchema

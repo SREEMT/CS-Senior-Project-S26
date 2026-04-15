@@ -1,3 +1,4 @@
+import { Db } from "mongodb";
 import mongoose from "mongoose";
 
 const trainingLogSchema = new mongoose.Schema(
@@ -29,6 +30,17 @@ const trainingLogSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Indexing schema for training logs
+trainingLogSchema.index({
+  location: "text",
+  date: "text"
+});
+trainingLogSchema.index({
+  userId: 1,
+  dogId: 1,
+  createdAt: -1
+});
 
 const TrainingLog = mongoose.model("TrainingLog", trainingLogSchema);
 
@@ -85,4 +97,6 @@ export async function findTrainingLogById(id) {
 export async function deleteTrainingLogById(id) {
   return await TrainingLog.findByIdAndDelete(id);
 }
+
+export default TrainingLog;
 

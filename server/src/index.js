@@ -19,8 +19,10 @@ dotenv.config({ path: join(__dirname, "..", ".env") });
 // Current port for local development.
 // Will implement .env
 import { connectDB } from "./config/db.js";
+import { initDB } from "./config/db.init.js";
 console.log("MONGO_URI:", process.env.MONGO_URI);
 await connectDB();
+await initDB();
 const PORT = 3049;
 
 // Serve method to start API
