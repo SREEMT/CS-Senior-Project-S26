@@ -1,6 +1,6 @@
 // Unit Tests for service logic for users
 
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 // Use plain functions for Bun's mock.module (no Jest-style mock.fn)
 // initial global mock; each test re-mocks/overrides as needed during beforeEach
@@ -34,6 +34,9 @@ const validUser = {
 };
 
 describe("User service - registration & update", () => {
+    const loadUserService = () =>
+        import("../../src/services/user.service.js?user-service-test");
+
     beforeEach(async () => {
         mock.restore();
         // re-register default model mock and re-import service to pick up mocks
@@ -47,9 +50,13 @@ describe("User service - registration & update", () => {
             findAllUsers: () => [],
             clearUsers: () => {}
         }));
-        const mod = await import("../../src/services/user.service.js");
+        const mod = await loadUserService();
         registerUser = mod.registerUser;
         updateUser = mod.updateUser;
+    });
+
+    afterEach(() => {
+        mock.restore();
     });
 
     // ----- REGISTRATION TESTS ------
@@ -80,7 +87,7 @@ describe("User service - registration & update", () => {
             deleteUser: () => true,
             clearUsers: () => {}
         }));
-        const mod = await import("../../src/services/user.service.js");
+        const mod = await loadUserService();
         registerUser = mod.registerUser;
 
         await expect(registerUser(validUser))
@@ -100,7 +107,7 @@ describe("User service - registration & update", () => {
             deleteUser: () => true,
             clearUsers: () => {}
         }));
-        const mod = await import("../../src/services/user.service.js");
+        const mod = await loadUserService();
         registerUser = mod.registerUser;
 
         await expect(registerUser(validUser))
@@ -150,6 +157,13 @@ describe("User service - registration & update", () => {
 // Additional tests covering lookup and admin helpers
 
 describe("User service - retrieval & deletion helpers", () => {
+    const loadUserService = () =>
+        import("../../src/services/user.service.js?user-service-test");
+
+    afterEach(() => {
+        mock.restore();
+    });
+
     it("retrieves a user by id and lists/deletes users", async () => {
         // mock a version where user exists
         mock.restore();
@@ -163,7 +177,7 @@ describe("User service - retrieval & deletion helpers", () => {
             findAllUsers: () => [{ id: "1" }],
             clearUsers: () => {}
         }));
-        const mod = await import("../../src/services/user.service.js");
+        const mod = await loadUserService();
         const { getUserById, getAllUsers, deleteUserById } = mod;
 
         const u = await getUserById("1");
@@ -189,7 +203,7 @@ describe("User service - retrieval & deletion helpers", () => {
             findAllUsers: () => [],
             clearUsers: () => {}
         }));
-        const mod = await import("../../src/services/user.service.js");
+        const mod = await loadUserService();
         const { getUserById, deleteUserById } = mod;
 
         await expect(getUserById("1")).rejects.toThrow("User not found");

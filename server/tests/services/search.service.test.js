@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import mongoose from "mongoose";
 
 const ids = {
@@ -89,6 +89,7 @@ describe("search.service - searchAll", () => {
 
   beforeEach(() => {
     mock.restore();
+    serviceModulePromise = null;
     captured = {
       commQuery: null,
       trainingQuery: null,
@@ -151,6 +152,14 @@ describe("search.service - searchAll", () => {
     }));
 
     mock.module("../../src/models/user.model.js", () => ({
+      findUserByEmail: async () => null,
+      findUserById: async () => null,
+      findUserByUsername: async () => null,
+      createUser: async () => null,
+      updateUserModel: async () => null,
+      deleteUser: async () => null,
+      findAllUsers: async () => [],
+      clearUsers: async () => {},
       default: {
         find: (query = {}) => {
           if (query.name instanceof RegExp) {
@@ -191,6 +200,10 @@ describe("search.service - searchAll", () => {
         },
       },
     }));
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   it("throws unauthorized when user id is missing", async () => {

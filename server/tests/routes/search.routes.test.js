@@ -1,10 +1,14 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("search.routes - searchRoutes", () => {
   const loadSearchRoutes = () =>
-    import(`../../src/routes/search.routes.js?search-routes-test=${Date.now()}-${Math.random()}`);
+    import("../../src/routes/search.routes.js?search-routes-test");
 
   beforeEach(() => {
+    mock.restore();
+  });
+
+  afterEach(() => {
     mock.restore();
   });
 

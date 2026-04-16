@@ -1,6 +1,9 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("Dog service - create & queries", () => {
+  const loadDogService = () =>
+    import("../../src/services/dog.service.js?dog-service-test");
+
   beforeEach(() => {
     mock.restore();
 
@@ -39,8 +42,12 @@ describe("Dog service - create & queries", () => {
     });
   });
 
+  afterEach(() => {
+    mock.restore();
+  });
+
   it("creates dog when name is provided and normalizes payload", async () => {
-    const mod = await import("../../src/services/dog.service.js");
+    const mod = await loadDogService();
     const { createDog } = mod;
 
     const dog = await createDog({
@@ -61,7 +68,7 @@ describe("Dog service - create & queries", () => {
   });
 
   it("throws when name is missing or blank", async () => {
-    const { createDog } = await import("../../src/services/dog.service.js");
+    const { createDog } = await loadDogService();
 
     await expect(
       createDog({ name: "   " }),
@@ -69,7 +76,7 @@ describe("Dog service - create & queries", () => {
   });
 
   it("gets dogs by owner", async () => {
-    const mod = await import("../../src/services/dog.service.js");
+    const mod = await loadDogService();
     const { createDog, getDogsByOwner } = mod;
 
     await createDog({ name: "Dog1", ownerId: "owner-1" });
@@ -102,9 +109,7 @@ describe("Dog service - create & queries", () => {
       },
     }));
 
-    const { getAllDogsLean } = await import(
-      "../../src/services/dog.service.js"
-    );
+    const { getAllDogsLean } = await loadDogService();
     const dogs = await getAllDogsLean();
 
     expect(dogs.length).toBe(1);
@@ -131,7 +136,7 @@ describe("Dog service - create & queries", () => {
       },
     }));
 
-    const { deleteDog } = await import("../../src/services/dog.service.js");
+    const { deleteDog } = await loadDogService();
     const deleted = await deleteDog("dog-1");
 
     expect(deleted).not.toBeNull();
@@ -139,7 +144,7 @@ describe("Dog service - create & queries", () => {
   });
 
   it("assigns an unowned dog to an owner", async () => {
-    const mod = await import("../../src/services/dog.service.js");
+    const mod = await loadDogService();
     const { createDog, assignDogToOwner } = mod;
 
     await createDog({ name: "UnownedDog" });
@@ -149,7 +154,7 @@ describe("Dog service - create & queries", () => {
   });
 
   it("re-assigns a dog even if it already has an owner", async () => {
-    const mod = await import("../../src/services/dog.service.js");
+    const mod = await loadDogService();
     const { createDog, assignDogToOwner } = mod;
 
     await createDog({ name: "OwnedDog", ownerId: "owner-1" });
@@ -158,4 +163,3 @@ describe("Dog service - create & queries", () => {
     expect(dog.ownerId).toBe("owner-2");
   });
 });
-

@@ -1,6 +1,9 @@
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("Event service - RSVPs", () => {
+  const loadEventService = () =>
+    import("../../src/services/event.service.js?event-rsvp-service-test");
+
   beforeEach(async () => {
     mock.restore();
     mock.module("../../src/models/eventRsvp.model.js", () => ({
@@ -40,8 +43,12 @@ describe("Event service - RSVPs", () => {
     }));
   });
 
+  afterEach(() => {
+    mock.restore();
+  });
+
   it("saves RSVP when status is valid (upsert behavior)", async () => {
-    const mod = await import("../../src/services/event.service.js");
+    const mod = await loadEventService();
     const { saveUserRsvpForEvent } = mod;
 
     const saved = await saveUserRsvpForEvent("user-1", "event-1", "Maybe");
@@ -51,7 +58,7 @@ describe("Event service - RSVPs", () => {
   });
 
   it("rejects invalid RSVP status", async () => {
-    const mod = await import("../../src/services/event.service.js");
+    const mod = await loadEventService();
     const { saveUserRsvpForEvent } = mod;
 
     await expect(saveUserRsvpForEvent("user-1", "event-1", "Later")).rejects.toThrow(
@@ -60,7 +67,7 @@ describe("Event service - RSVPs", () => {
   });
 
   it("lists RSVPs for an event", async () => {
-    const mod = await import("../../src/services/event.service.js");
+    const mod = await loadEventService();
     const { listEventRsvps } = mod;
 
     const list = await listEventRsvps("event-1");
@@ -69,4 +76,3 @@ describe("Event service - RSVPs", () => {
     expect(list[0].status).toBe("Yes");
   });
 });
-

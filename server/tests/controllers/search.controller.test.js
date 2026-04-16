@@ -1,12 +1,16 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("search.controller - searchController", () => {
   const loadSearchController = () =>
     import(
-      `../../src/controllers/search.controller.js?search-controller-test=${Date.now()}-${Math.random()}`
+      "../../src/controllers/search.controller.js?search-controller-test"
     );
 
   beforeEach(() => {
+    mock.restore();
+  });
+
+  afterEach(() => {
     mock.restore();
   });
 

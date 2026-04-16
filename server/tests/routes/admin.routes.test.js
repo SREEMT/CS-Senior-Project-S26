@@ -1,7 +1,14 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("adminRoutes", () => {
+  const loadAdminRoutes = () =>
+    import("../../src/routes/admin.routes.js?admin-routes-test");
+
   beforeEach(() => {
+    mock.restore();
+  });
+
+  afterEach(() => {
     mock.restore();
   });
 
@@ -15,7 +22,7 @@ describe("adminRoutes", () => {
       requireAdmin: (req, next) => next(req),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users", {
       method: "GET",
     });
@@ -35,7 +42,7 @@ describe("adminRoutes", () => {
         }),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users", {
       method: "GET",
     });
@@ -58,7 +65,7 @@ describe("adminRoutes", () => {
         new Response(JSON.stringify({ deleted: true }), { status: 200 }),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users", {
       method: "GET",
     });
@@ -68,7 +75,7 @@ describe("adminRoutes", () => {
   });
 
   it("returns 400 when DELETE /api/admin/users/ has no id", async () => {
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
 
     const req = new Request("http://localhost/api/admin/users/", {
       method: "DELETE",
@@ -94,7 +101,7 @@ describe("adminRoutes", () => {
         }),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users/123", {
       method: "DELETE",
     });
@@ -113,7 +120,7 @@ describe("adminRoutes", () => {
       requireAdmin: (req, next) => next(req),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users/u1/dogs/d1/attach", {
       method: "POST",
     });
@@ -138,7 +145,7 @@ describe("adminRoutes", () => {
         new Response(JSON.stringify({ message: "Dog attached" }), { status: 200 }),
     }));
 
-    const { adminRoutes } = await import("../../src/routes/admin.routes.js");
+    const { adminRoutes } = await loadAdminRoutes();
     const req = new Request("http://localhost/api/admin/users/u1/dogs/d1/attach", {
       method: "POST",
     });
@@ -147,4 +154,3 @@ describe("adminRoutes", () => {
     expect(res.status).toBe(200);
   });
 });
-

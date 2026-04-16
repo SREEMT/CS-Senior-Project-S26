@@ -1,7 +1,14 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 describe("auth.middleware - requireAuth", () => {
+  const loadAuthMiddleware = () =>
+    import("../../src/middleware/auth.middleware.js?auth-middleware-test");
+
   beforeEach(() => {
+    mock.restore();
+  });
+
+  afterEach(() => {
     mock.restore();
   });
 
@@ -14,7 +21,7 @@ describe("auth.middleware - requireAuth", () => {
       findUserById: async () => null,
     }));
 
-    const mod = await import("../../src/middleware/auth.middleware.js");
+    const mod = await loadAuthMiddleware();
     const { requireAuth } = mod;
 
     const req = new Request("http://localhost/protected", {
@@ -38,7 +45,7 @@ describe("auth.middleware - requireAuth", () => {
       findUserById: async (id) => ({ id, role: "user" }),
     }));
 
-    const mod = await import("../../src/middleware/auth.middleware.js");
+    const mod = await loadAuthMiddleware();
     const { requireAuth } = mod;
 
     const req = new Request("http://localhost/protected", {
@@ -72,7 +79,7 @@ describe("auth.middleware - requireAuth", () => {
       findUserById: async () => null,
     }));
 
-    const mod = await import("../../src/middleware/auth.middleware.js");
+    const mod = await loadAuthMiddleware();
     const { requireAuth } = mod;
 
     const req = new Request("http://localhost/protected", {
@@ -91,13 +98,16 @@ describe("auth.middleware - requireAuth", () => {
 });
 
 describe("auth.middleware - requireAdmin", () => {
+  const loadAuthMiddleware = () =>
+    import("../../src/middleware/auth.middleware.js?auth-middleware-test-admin");
+
   it("returns 403 when user is not admin", () => {
     const req = {
       user: { id: "user-1", role: "user" },
     };
 
     // dynamic import inside test to keep isolation
-    return import("../../src/middleware/auth.middleware.js").then(
+    return loadAuthMiddleware().then(
       ({ requireAdmin }) => {
         const res = requireAdmin(req, () => {
           throw new Error("next should not be called");
@@ -112,9 +122,7 @@ describe("auth.middleware - requireAdmin", () => {
       user: { id: "admin-1", role: "admin" },
     };
 
-    const { requireAdmin } = await import(
-      "../../src/middleware/auth.middleware.js"
-    );
+    const { requireAdmin } = await loadAuthMiddleware();
 
     let nextCalled = false;
     const res = requireAdmin(req, (r) => {
@@ -127,4 +135,3 @@ describe("auth.middleware - requireAdmin", () => {
     expect(res.status).toBe(200);
   });
 });
-
