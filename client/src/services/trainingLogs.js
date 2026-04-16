@@ -74,3 +74,24 @@ export async function deleteTrainingLog(id) {
   return res.json();
 }
 
+export async function updateTrainingLog(id, data) {
+  const res = await fetch(`${API_BASE}/training-logs/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+
+  if (!res.ok) {
+    throw new Error(json?.error || json?.message || "Failed to update training log");
+  }
+
+  return json ?? {};
+}

@@ -1,6 +1,7 @@
 import {
   createTrainingLogController,
   getMyTrainingLogsController,
+  updateMyTrainingLogController,
   deleteMyTrainingLogController,
 } from "../controllers/trainingLog.controller.js";
 
@@ -24,6 +25,11 @@ export async function trainingLogRoutes(req) {
     );
   }
 
+  if (req.method === "PUT" && pathname.startsWith("/api/training-logs/")) {
+    return await requireAuth(req, (r) =>
+      updateMyTrainingLogController(r, { params: { id: pathname.split("/").pop() } })
+    );
+  }
+
   return null;
 }
-

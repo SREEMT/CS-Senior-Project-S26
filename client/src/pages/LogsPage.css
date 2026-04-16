@@ -155,18 +155,44 @@
 .logs-item-actions {
   margin-top: 0.75rem;
   display: flex;
+  gap: 0.5rem;
   justify-content: flex-end;
 }
 
+.logs-edit-btn,
+.logs-cancel-btn,
 .logs-delete-btn {
   padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
-  background: transparent;
-  color: #ff8a80;
-  border: 1px solid #ff8a80;
   border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
+}
+
+.logs-edit-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.logs-edit-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.logs-cancel-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.logs-cancel-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.logs-delete-btn {
+  background: transparent;
+  color: #ff8a80;
+  border: 1px solid #ff8a80;
 }
 
 .logs-delete-btn:hover:not(:disabled) {
@@ -293,4 +319,3 @@
     min-width: unset;
   }
 }
-

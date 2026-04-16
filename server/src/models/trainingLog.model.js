@@ -98,5 +98,29 @@ export async function deleteTrainingLogById(id) {
   return await TrainingLog.findByIdAndDelete(id);
 }
 
-export default TrainingLog;
+export async function updateTrainingLogById(id, updates) {
+  const trim = (v) => (v != null ? String(v).trim() : undefined);
 
+  const updateDoc = {};
+  if (updates.dogId !== undefined) updateDoc.dogId = updates.dogId;
+  if (updates.eventId !== undefined) updateDoc.eventId = updates.eventId;
+  if (updates.date !== undefined) updateDoc.date = trim(updates.date);
+  if (updates.location !== undefined) updateDoc.location = trim(updates.location);
+  if (updates.time !== undefined) updateDoc.time = trim(updates.time);
+  if (updates.startTime !== undefined) updateDoc.startTime = trim(updates.startTime);
+  if (updates.stopTime !== undefined) updateDoc.stopTime = trim(updates.stopTime);
+
+  const log = await TrainingLog.findByIdAndUpdate(id, updateDoc, {
+    returnDocument: "after",
+    runValidators: true,
+  }).lean();
+
+  if (!log) return null;
+  return {
+    ...log,
+    id: log._id.toString(),
+    _id: undefined,
+  };
+}
+
+export default TrainingLog;

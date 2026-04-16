@@ -1,6 +1,7 @@
 import {
     createLogController,
     getEventLogsController,
+    updateLogController,
     deleteLogController
 } from "../controllers/commLog.controller.js";
 
@@ -25,6 +26,15 @@ export async function commLogRoutes(req) {
 
         return await requireAuth(req, (r) =>
             deleteLogController(r, { params: { id } })
+        );
+    }
+
+    // Update log
+    if (req.method === "PUT" && url.pathname.startsWith("/api/communications/")) {
+        const id = url.pathname.split("/").pop();
+
+        return await requireAuth(req, (r) =>
+            updateLogController(r, { params: { id } })
         );
     }
 

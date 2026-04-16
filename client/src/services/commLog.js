@@ -63,3 +63,25 @@ export async function deleteCommunicationLog(id) {
 
   return res.json();
 }
+
+export async function updateCommunicationLog(id, data) {
+  const res = await fetch(`${API_BASE}/communications/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+
+  if (!res.ok) {
+    throw new Error(json?.error || json?.message || "Failed to update log");
+  }
+
+  return json ?? {};
+}

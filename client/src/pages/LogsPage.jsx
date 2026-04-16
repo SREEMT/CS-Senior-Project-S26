@@ -4,6 +4,7 @@ import {
   createCommunicationLog,
   deleteCommunicationLog,
   getCommunicationLogs,
+  updateCommunicationLog,
 } from "../services/commLog.js";
 import { fetchEvents } from "../services/events.js";
 import { getMyDogs } from "../services/dogs.js";
@@ -11,6 +12,7 @@ import {
   createTrainingLog,
   deleteTrainingLog,
   getMyTrainingLogs,
+  updateTrainingLog,
 } from "../services/trainingLogs.js";
 import { searchItems } from "../services/search.js";
 import { getToken } from "../services/auth.js";
@@ -54,12 +56,25 @@ export default function LogsPage() {
   const [commSaving, setCommSaving] = useState(false);
   const [commMessage, setCommMessage] = useState(null);
   const [commForm, setCommForm] = useState({ title: "", body: "" });
+  const [commUpdating, setCommUpdating] = useState(false);
+  const [commEditingId, setCommEditingId] = useState(null);
+  const [commEditForm, setCommEditForm] = useState({ title: "", body: "" });
 
   // Training logs state
   const [trainingLogs, setTrainingLogs] = useState([]);
   const [trainingLoading, setTrainingLoading] = useState(false);
   const [trainingSaving, setTrainingSaving] = useState(false);
   const [trainingMessage, setTrainingMessage] = useState(null);
+  const [trainingUpdating, setTrainingUpdating] = useState(false);
+  const [trainingEditingId, setTrainingEditingId] = useState(null);
+  const [trainingEditForm, setTrainingEditForm] = useState({
+    date: "",
+    location: "",
+    time: "",
+    startTime: "",
+    stopTime: "",
+    dogId: "",
+  });
 
   const [dogs, setDogs] = useState([]);
   const [dogsLoading, setDogsLoading] = useState(false);
@@ -206,6 +221,48 @@ export default function LogsPage() {
     }
   }
 
+  function startEditCommunication(log) {
+    setCommEditingId(log.id);
+    setCommEditForm({
+      title: log.title ?? "",
+      body: log.body ?? "",
+    });
+    setCommMessage(null);
+  }
+
+  function cancelEditCommunication() {
+    setCommEditingId(null);
+    setCommEditForm({ title: "", body: "" });
+  }
+
+  function handleCommunicationEditChange(e) {
+    const { name, value } = e.target;
+    setCommEditForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function saveCommunicationEdit(id) {
+    setCommUpdating(true);
+    setCommMessage(null);
+    try {
+      if (!commEditForm.title.trim()) throw new Error("Title is required");
+      if (!commEditForm.body.trim()) throw new Error("Body is required");
+
+      await updateCommunicationLog(id, {
+        title: commEditForm.title,
+        body: commEditForm.body,
+      });
+
+      cancelEditCommunication();
+      setSearchResults(null);
+      await loadCommunicationLogs();
+      setCommMessage("Communication log updated.");
+    } catch (err) {
+      setCommMessage(err.message || "Failed to update communication log");
+    } finally {
+      setCommUpdating(false);
+    }
+  }
+
   function applyEventToTrainingForm(eventId) {
     if (eventId === "manual") return;
     const ev = events.find((e) => e.id === eventId);
@@ -272,6 +329,65 @@ export default function LogsPage() {
     } catch (err) {
       alert(err.message || "Failed to delete training log");
     }
+  }
+
+  function startEditTraining(log) {
+    setTrainingEditingId(log.id);
+    setTrainingEditForm({
+      date: log.date ?? "",
+      location: log.location ?? "",
+      time: log.time ?? "",
+      startTime: log.startTime ?? "",
+      stopTime: log.stopTime ?? "",
+      dogId: log.dogId ? String(log.dogId) : "",
+    });
+    setTrainingMessage(null);
+  }
+
+  function cancelEditTraining() {
+    setTrainingEditingId(null);
+    setTrainingEditForm({
+      date: "",
+      location: "",
+      time: "",
+      startTime: "",
+      stopTime: "",
+      dogId: "",
+    });
+  }
+
+  function handleTrainingEditFieldChange(e) {
+    const { name, value } = e.target;
+    setTrainingEditForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function saveTrainingEdit(id) {
+    setTrainingUpdating(true);
+    setTrainingMessage(null);
+    try {
+      if (!trainingEditForm.dogId) throw new Error("Dog is required");
+      if (!trainingEditForm.date) throw new Error("Date is required");
+      if (!trainingEditForm.location.trim()) throw new Error("Location is required");
+      if (!trainingEditForm.time) throw new Error("Time is required");
+      if (!trainingEditForm.startTime) throw new Error("Start Time is required");
+      if (!trainingEditForm.stopTime) throw new Error("Stop Time is required");
+
+      await updateTrainingLog(id, trainingEditForm);
+
+      cancelEditTraining();
+      setSearchResults(null);
+      await loadTrainingLogs();
+      setTrainingMessage("Training log updated.");
+    } catch (err) {
+      setTrainingMessage(err.message || "Failed to update training log");
+    } finally {
+      setTrainingUpdating(false);
+    }
+  }
+
+  function canEditLog(log) {
+    if (!myUserId || !log?.userId) return false;
+    return String(log.userId) === myUserId;
   }
 
   function toggleTab() {
@@ -404,19 +520,66 @@ export default function LogsPage() {
                             {formatTimestamp(log.createdAt)}
                           </span>
                         </div>
-                        <div className="logs-item-title">{log.title}</div>
-                        <div className="logs-item-body">{log.body}</div>
-                        <div className="logs-item-actions">
-                          {myUserId && log.userId && String(log.userId) === myUserId && (
-                            <button
-                              type="button"
-                              className="logs-delete-btn"
-                              onClick={() => handleDeleteCommunication(log.id)}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
+                        {commEditingId === log.id ? (
+                          <div className="logs-form logs-edit-form">
+                            <input
+                              name="title"
+                              value={commEditForm.title}
+                              onChange={handleCommunicationEditChange}
+                              placeholder="Title"
+                            />
+                            <textarea
+                              name="body"
+                              value={commEditForm.body}
+                              onChange={handleCommunicationEditChange}
+                              rows={4}
+                              placeholder="Body"
+                            />
+                            <div className="logs-item-actions">
+                              <button
+                                type="button"
+                                className="logs-edit-btn"
+                                disabled={commUpdating}
+                                onClick={() => saveCommunicationEdit(log.id)}
+                              >
+                                {commUpdating ? "Saving..." : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                className="logs-cancel-btn"
+                                disabled={commUpdating}
+                                onClick={cancelEditCommunication}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="logs-item-title">{log.title}</div>
+                            <div className="logs-item-body">{log.body}</div>
+                            <div className="logs-item-actions">
+                              {canEditLog(log) && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="logs-edit-btn"
+                                    onClick={() => startEditCommunication(log)}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="logs-delete-btn"
+                                    onClick={() => handleDeleteCommunication(log.id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -433,19 +596,66 @@ export default function LogsPage() {
                           {formatTimestamp(log.createdAt)}
                         </span>
                       </div>
-                      <div className="logs-item-title">{log.title}</div>
-                      <div className="logs-item-body">{log.body}</div>
-                      <div className="logs-item-actions">
-                        {myUserId && log.userId && String(log.userId) === myUserId && (
-                          <button
-                            type="button"
-                            className="logs-delete-btn"
-                            onClick={() => handleDeleteCommunication(log.id)}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
+                      {commEditingId === log.id ? (
+                        <div className="logs-form logs-edit-form">
+                          <input
+                            name="title"
+                            value={commEditForm.title}
+                            onChange={handleCommunicationEditChange}
+                            placeholder="Title"
+                          />
+                          <textarea
+                            name="body"
+                            value={commEditForm.body}
+                            onChange={handleCommunicationEditChange}
+                            rows={4}
+                            placeholder="Body"
+                          />
+                          <div className="logs-item-actions">
+                            <button
+                              type="button"
+                              className="logs-edit-btn"
+                              disabled={commUpdating}
+                              onClick={() => saveCommunicationEdit(log.id)}
+                            >
+                              {commUpdating ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              className="logs-cancel-btn"
+                              disabled={commUpdating}
+                              onClick={cancelEditCommunication}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="logs-item-title">{log.title}</div>
+                          <div className="logs-item-body">{log.body}</div>
+                          <div className="logs-item-actions">
+                            {canEditLog(log) && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="logs-edit-btn"
+                                  onClick={() => startEditCommunication(log)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="logs-delete-btn"
+                                  onClick={() => handleDeleteCommunication(log.id)}
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -581,29 +791,127 @@ export default function LogsPage() {
                             {formatTimestamp(log.createdAt)}
                           </span>
                         </div>
-                        <div className="logs-item-body">
-                          <div>
-                            <strong>Date:</strong> {log.date}
+                        {trainingEditingId === log.id ? (
+                          <div className="logs-form logs-edit-form">
+                            <label className="logs-field">
+                              <span className="logs-label">Date</span>
+                              <input
+                                type="date"
+                                name="date"
+                                value={trainingEditForm.date}
+                                onChange={handleTrainingEditFieldChange}
+                              />
+                            </label>
+                            <label className="logs-field">
+                              <span className="logs-label">Location</span>
+                              <input
+                                name="location"
+                                value={trainingEditForm.location}
+                                onChange={handleTrainingEditFieldChange}
+                              />
+                            </label>
+                            <label className="logs-field">
+                              <span className="logs-label">Time</span>
+                              <input
+                                type="time"
+                                name="time"
+                                value={trainingEditForm.time}
+                                onChange={handleTrainingEditFieldChange}
+                              />
+                            </label>
+                            <div className="logs-time-row">
+                              <label className="logs-field">
+                                <span className="logs-label">Start Time</span>
+                                <input
+                                  type="time"
+                                  name="startTime"
+                                  value={trainingEditForm.startTime}
+                                  onChange={handleTrainingEditFieldChange}
+                                />
+                              </label>
+                              <label className="logs-field">
+                                <span className="logs-label">Stop Time</span>
+                                <input
+                                  type="time"
+                                  name="stopTime"
+                                  value={trainingEditForm.stopTime}
+                                  onChange={handleTrainingEditFieldChange}
+                                />
+                              </label>
+                            </div>
+                            <label className="logs-field">
+                              <span className="logs-label">Dog</span>
+                              <select
+                                name="dogId"
+                                value={trainingEditForm.dogId}
+                                onChange={handleTrainingEditFieldChange}
+                                disabled={dogsLoading}
+                              >
+                                <option value="">Select a dog...</option>
+                                {dogs.map((d) => (
+                                  <option key={d.id} value={d.id}>
+                                    {d.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <div className="logs-item-actions">
+                              <button
+                                type="button"
+                                className="logs-edit-btn"
+                                disabled={trainingUpdating}
+                                onClick={() => saveTrainingEdit(log.id)}
+                              >
+                                {trainingUpdating ? "Saving..." : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                className="logs-cancel-btn"
+                                disabled={trainingUpdating}
+                                onClick={cancelEditTraining}
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                          <div>
-                            <strong>Location:</strong> {log.location}
-                          </div>
-                          <div>
-                            <strong>Time:</strong> {log.time}
-                          </div>
-                          <div>
-                            <strong>Start - Stop:</strong> {log.startTime} - {log.stopTime}
-                          </div>
-                        </div>
-                        <div className="logs-item-actions">
-                          <button
-                            type="button"
-                            className="logs-delete-btn"
-                            onClick={() => handleDeleteTraining(log.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        ) : (
+                          <>
+                            <div className="logs-item-body">
+                              <div>
+                                <strong>Date:</strong> {log.date}
+                              </div>
+                              <div>
+                                <strong>Location:</strong> {log.location}
+                              </div>
+                              <div>
+                                <strong>Time:</strong> {log.time}
+                              </div>
+                              <div>
+                                <strong>Start - Stop:</strong> {log.startTime} - {log.stopTime}
+                              </div>
+                            </div>
+                            <div className="logs-item-actions">
+                              {canEditLog(log) && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="logs-edit-btn"
+                                    onClick={() => startEditTraining(log)}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="logs-delete-btn"
+                                    onClick={() => handleDeleteTraining(log.id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -624,29 +932,127 @@ export default function LogsPage() {
                           {formatTimestamp(log.createdAt)}
                         </span>
                       </div>
-                      <div className="logs-item-body">
-                        <div>
-                          <strong>Date:</strong> {log.date}
+                      {trainingEditingId === log.id ? (
+                        <div className="logs-form logs-edit-form">
+                          <label className="logs-field">
+                            <span className="logs-label">Date</span>
+                            <input
+                              type="date"
+                              name="date"
+                              value={trainingEditForm.date}
+                              onChange={handleTrainingEditFieldChange}
+                            />
+                          </label>
+                          <label className="logs-field">
+                            <span className="logs-label">Location</span>
+                            <input
+                              name="location"
+                              value={trainingEditForm.location}
+                              onChange={handleTrainingEditFieldChange}
+                            />
+                          </label>
+                          <label className="logs-field">
+                            <span className="logs-label">Time</span>
+                            <input
+                              type="time"
+                              name="time"
+                              value={trainingEditForm.time}
+                              onChange={handleTrainingEditFieldChange}
+                            />
+                          </label>
+                          <div className="logs-time-row">
+                            <label className="logs-field">
+                              <span className="logs-label">Start Time</span>
+                              <input
+                                type="time"
+                                name="startTime"
+                                value={trainingEditForm.startTime}
+                                onChange={handleTrainingEditFieldChange}
+                              />
+                            </label>
+                            <label className="logs-field">
+                              <span className="logs-label">Stop Time</span>
+                              <input
+                                type="time"
+                                name="stopTime"
+                                value={trainingEditForm.stopTime}
+                                onChange={handleTrainingEditFieldChange}
+                              />
+                            </label>
+                          </div>
+                          <label className="logs-field">
+                            <span className="logs-label">Dog</span>
+                            <select
+                              name="dogId"
+                              value={trainingEditForm.dogId}
+                              onChange={handleTrainingEditFieldChange}
+                              disabled={dogsLoading}
+                            >
+                              <option value="">Select a dog...</option>
+                              {dogs.map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <div className="logs-item-actions">
+                            <button
+                              type="button"
+                              className="logs-edit-btn"
+                              disabled={trainingUpdating}
+                              onClick={() => saveTrainingEdit(log.id)}
+                            >
+                              {trainingUpdating ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              className="logs-cancel-btn"
+                              disabled={trainingUpdating}
+                              onClick={cancelEditTraining}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <strong>Location:</strong> {log.location}
-                        </div>
-                        <div>
-                          <strong>Time:</strong> {log.time}
-                        </div>
-                        <div>
-                          <strong>Start - Stop:</strong> {log.startTime} - {log.stopTime}
-                        </div>
-                      </div>
-                      <div className="logs-item-actions">
-                        <button
-                          type="button"
-                          className="logs-delete-btn"
-                          onClick={() => handleDeleteTraining(log.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="logs-item-body">
+                            <div>
+                              <strong>Date:</strong> {log.date}
+                            </div>
+                            <div>
+                              <strong>Location:</strong> {log.location}
+                            </div>
+                            <div>
+                              <strong>Time:</strong> {log.time}
+                            </div>
+                            <div>
+                              <strong>Start - Stop:</strong> {log.startTime} - {log.stopTime}
+                            </div>
+                          </div>
+                          <div className="logs-item-actions">
+                            {canEditLog(log) && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="logs-edit-btn"
+                                  onClick={() => startEditTraining(log)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="logs-delete-btn"
+                                  onClick={() => handleDeleteTraining(log.id)}
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

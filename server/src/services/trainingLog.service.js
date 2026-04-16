@@ -2,6 +2,7 @@ import {
   createTrainingLog,
   findMyTrainingLogs,
   findTrainingLogById,
+  updateTrainingLogById,
   deleteTrainingLogById,
 } from "../models/trainingLog.model.js";
 
@@ -52,3 +53,49 @@ export async function deleteMyTrainingLog(user, logId) {
   return true;
 }
 
+export async function updateMyTrainingLog(user, logId, data) {
+  const trim = (v) => (v != null ? String(v).trim() : undefined);
+
+  if (!user?._id) throw new Error("Unauthorized");
+  const existing = await findTrainingLogById(logId);
+  if (!existing) throw new Error("Training log not found");
+  if (String(existing.userId) !== String(user._id)) {
+    throw new Error("Unauthorized");
+  }
+
+  const updates = {};
+  if (data?.dogId !== undefined) updates.dogId = data.dogId;
+  if (data?.eventId !== undefined) updates.eventId = data.eventId ?? null;
+  if (data?.date !== undefined) updates.date = trim(data.date);
+  if (data?.location !== undefined) updates.location = trim(data.location);
+  if (data?.time !== undefined) updates.time = trim(data.time);
+  if (data?.startTime !== undefined) updates.startTime = trim(data.startTime);
+  if (data?.stopTime !== undefined) updates.stopTime = trim(data.stopTime);
+
+  if (Object.keys(updates).length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  if (updates.dogId !== undefined && !updates.dogId) {
+    throw new Error("Dog is required");
+  }
+  if (updates.date !== undefined && !updates.date) {
+    throw new Error("Date is required");
+  }
+  if (updates.location !== undefined && !updates.location) {
+    throw new Error("Location is required");
+  }
+  if (updates.time !== undefined && !updates.time) {
+    throw new Error("Time is required");
+  }
+  if (updates.startTime !== undefined && !updates.startTime) {
+    throw new Error("Start Time is required");
+  }
+  if (updates.stopTime !== undefined && !updates.stopTime) {
+    throw new Error("Stop Time is required");
+  }
+
+  const updated = await updateTrainingLogById(logId, updates);
+  if (!updated) throw new Error("Training log not found");
+  return updated;
+}

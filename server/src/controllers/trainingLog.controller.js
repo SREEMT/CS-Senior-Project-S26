@@ -1,6 +1,7 @@
 import {
   getMyTraining,
   logTraining,
+  updateMyTrainingLog,
   deleteMyTrainingLog,
 } from "../services/trainingLog.service.js";
 
@@ -54,3 +55,23 @@ export async function deleteMyTrainingLogController(req, { params } = {}) {
   }
 }
 
+export async function updateMyTrainingLogController(req, { params } = {}) {
+  try {
+    const url = new URL(req.url);
+    const id = params?.id ?? url.searchParams.get("id");
+
+    if (!id) {
+      return jsonResponse({ error: "Training log id required" }, 400);
+    }
+
+    const body = await req.json();
+    const updated = await updateMyTrainingLog(req.user, id, body);
+    return jsonResponse(updated);
+  } catch (err) {
+    const message = err.message || "Failed to update training log";
+    let status = 400;
+    if (message === "Unauthorized") status = 403;
+    if (message === "Training log not found") status = 404;
+    return jsonResponse({ error: message }, status);
+  }
+}

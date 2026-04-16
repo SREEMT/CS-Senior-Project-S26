@@ -166,3 +166,33 @@ export async function findLogById(id) {
 export async function deleteCommLog(id) {
     return await CommunicationLog.findByIdAndDelete(id);
 }
+
+export async function updateCommLogById(id, updates) {
+    const trim = (v) => (v != null ? String(v).trim() : undefined);
+
+    const nextBody = updates.body ?? updates.message;
+    const updateDoc = {};
+    if (updates.eventId !== undefined) updateDoc.eventId = updates.eventId;
+    if (updates.dogId !== undefined) updateDoc.dogId = updates.dogId;
+    if (updates.type !== undefined) updateDoc.type = trim(updates.type);
+    if (updates.priority !== undefined) updateDoc.priority = trim(updates.priority);
+    if (updates.title !== undefined) updateDoc.title = trim(updates.title);
+    if (nextBody !== undefined) {
+        updateDoc.body = trim(nextBody);
+        updateDoc.message = trim(nextBody);
+    }
+    if (updates.location !== undefined) updateDoc.location = trim(updates.location);
+    if (updates.radioChannel !== undefined) updateDoc.radioChannel = trim(updates.radioChannel);
+
+    const log = await CommunicationLog.findByIdAndUpdate(id, updateDoc, {
+        returnDocument: "after",
+        runValidators: true,
+    }).lean();
+
+    if (!log) return null;
+    return {
+        ...log,
+        id: log._id.toString(),
+        _id: undefined,
+    };
+}

@@ -1,6 +1,7 @@
 import {
     logComm,
     getEventComm,
+    updateComm,
     deleteComm,
 } from "../services/commLog.service.js";
 
@@ -50,4 +51,31 @@ export async function deleteLogController(req, { params } = {}) {
     await deleteComm(req.user, id);
 
     return Response.json({ success: true });
+}
+
+export async function updateLogController(req, { params } = {}) {
+    try {
+        const url = new URL(req.url);
+        const id = params?.id ?? url.searchParams.get("id");
+
+        if (!id) {
+            return new Response(JSON.stringify({ error: "Log ID is required" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        const body = await req.json();
+        const updated = await updateComm(req.user, id, body);
+        return Response.json(updated);
+    } catch (err) {
+        const message = err.message || "Failed to update log";
+        let status = 400;
+        if (message === "Unauthorized") status = 403;
+        if (message === "Log not found") status = 404;
+        return new Response(JSON.stringify({ error: message }), {
+            status,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
 }
