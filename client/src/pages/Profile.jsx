@@ -95,7 +95,6 @@ export default function Profile() {
         <header className="profile-header">
           <h2>My Profile</h2>
           <div className="profile-header-actions">
-            <Link to="/certifications" className="btn-link">My Certifications</Link>
             {(user.role === "admin") && (
               <Link to="/admin/users" className="btn-secondary">Manage users</Link>
             )}

@@ -43,12 +43,6 @@
   font-weight: 500;
 }
 
-.logs-header-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
 .logs-message {
   margin: 0 0 1rem 0;
   padding: 0.75rem 1rem;
@@ -261,16 +255,39 @@
   align-items: center;
 }
 
-.logs-search-input {
-  flex: 1;
+/* Override .logs-card input { width: 100% } so the field shares a row with buttons */
+.logs-search-row .logs-search-input {
+  flex: 1 1 0%;
   min-width: 0;
+  width: auto;
+}
+
+.logs-search-row .logs-search-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.logs-search-row .logs-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+/* Override global .btn-primary (width: 100%) for inline search actions */
+.logs-search-row .btn-primary.logs-search-btn {
+  width: auto;
+  min-width: unset;
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .logs-search-btn,
 .logs-clear-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .logs-filters-row {

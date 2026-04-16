@@ -9,6 +9,8 @@ import AdminUsers from "./pages/AdminUsers";
 import LogsPage from "./pages/LogsPage";
 import Calendar from "./pages/Calendar";
 import Certifications from "./pages/Certifications";
+import Documents from "./pages/Documents";
+import Home from "./pages/Home";
 
 function App() {
   return (
@@ -20,6 +22,14 @@ function App() {
             <LogsPage />
         </ProtectedRoute>}/>
         <Route element={<AuthenticatedLayout />}>
+          <Route
+            path="home"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="calendar"
             element={
@@ -33,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="documents"
+            element={
+              <ProtectedRoute>
+                <Documents />
               </ProtectedRoute>
             }
           />

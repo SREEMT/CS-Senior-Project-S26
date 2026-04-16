@@ -14,11 +14,18 @@ export default function Navbar() {
       </div>
       <ul className="navbar-links">
         <li>
-          <span className="navbar-link-placeholder">Home</span>
+          <Link to="/home" className="navbar-link">
+            Home
+          </Link>
         </li>
         <li>
           <Link to="/calendar" className="navbar-link">
             Calendar
+          </Link>
+        </li>
+        <li>
+          <Link to="/documents" className="navbar-link">
+            Documents
           </Link>
         </li>
         <li>

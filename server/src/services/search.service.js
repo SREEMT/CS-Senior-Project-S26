@@ -11,6 +11,7 @@ import { buildSort } from "../utils/sortQuery";
 const COMMUNICATION_TYPE = "communication_log";
 const TRAINING_TYPE = "training_log";
 const CERTIFICATION_TYPE = "certification";
+const DOCUMENT_TYPE = "document";
 
 function toObjectId(id) {
     if (!id) return null;
@@ -81,6 +82,9 @@ function normalizeType(type) {
     if (normalized === "cert" || normalized === CERTIFICATION_TYPE) {
         return CERTIFICATION_TYPE;
     }
+    if (normalized === "documents" || normalized === DOCUMENT_TYPE) {
+        return DOCUMENT_TYPE;
+    }
     return "";
 }
 
@@ -123,6 +127,7 @@ export async function searchAll({ query, filters = {}, user }) {
     const includeCommunication = !requestedType || requestedType === COMMUNICATION_TYPE;
     const includeTraining = !requestedType || requestedType === TRAINING_TYPE;
     const includeCertification = !requestedType || requestedType === CERTIFICATION_TYPE;
+    const includeDocument = !requestedType || requestedType === DOCUMENT_TYPE;
 
     let userIdsFromName = [];
     let dogIdsFromName = [];
@@ -221,10 +226,19 @@ export async function searchAll({ query, filters = {}, user }) {
     const trainingQuery = mergeWithAnd(trainingConditions);
     const certificationQuery = mergeWithAnd(certificationConditions);
 
+    const documentConditions = [{}, createdAtRangeQuery];
+
+    if (searchRegex) {
+        documentConditions.push({ title: searchRegex });
+    }
+
+    const documentQuery = mergeWithAnd(documentConditions);
+
     const conn = await connectDB();
     const certCollection = conn.db.collection("certifications");
+    const documentCollection = conn.db.collection("documents");
 
-    const [comms, training, certs] = await Promise.all([
+    const [comms, training, certs, documents] = await Promise.all([
         includeCommunication
             ? CommunicationLog.find(communicationQuery).sort(sort).lean()
             : Promise.resolve([]),
@@ -233,6 +247,9 @@ export async function searchAll({ query, filters = {}, user }) {
             : Promise.resolve([]),
         includeCertification
             ? certCollection.find(certificationQuery).sort(sort).toArray()
+            : Promise.resolve([]),
+        includeDocument
+            ? documentCollection.find(documentQuery).sort(sort).toArray()
             : Promise.resolve([]),
     ]);
 
@@ -253,6 +270,11 @@ export async function searchAll({ query, filters = {}, user }) {
 
     for (const cert of certs) {
         const userId = toIdString(cert.userId);
+        if (userId) userIds.add(userId);
+    }
+
+    for (const d of documents) {
+        const userId = toIdString(d.userId);
         if (userId) userIds.add(userId);
     }
 
@@ -322,6 +344,14 @@ export async function searchAll({ query, filters = {}, user }) {
                 updatedAt: doc.updatedAt,
             };
         }),
+        ...documents.map((doc) => ({
+            id: doc._id.toString(),
+            type: DOCUMENT_TYPE,
+            title: doc.title,
+            dateAdded: doc.createdAt,
+            createdAt: doc.createdAt,
+            updatedAt: doc.updatedAt,
+        })),
     ];
 
     results.sort(getCombinedSort(filters.sortBy));

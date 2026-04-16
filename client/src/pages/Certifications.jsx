@@ -5,6 +5,7 @@ import {
   deleteCertification
 } from "../services/certifications";
 import { searchItems } from "../services/search.js";
+import "./Certifications.css";
 
 function parseJwt(token) {
   try {
@@ -159,144 +160,166 @@ function Certifications() {
     });
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>{isAdmin ? "All Certifications" : "My Certifications"}</h1>
+    <div className="page-full-column certs-page">
+      <div className="certs-page-inner">
+        <header className="certs-header">
+          <h2>{isAdmin ? "All Certifications" : "My Certifications"}</h2>
+        </header>
 
-      <h2>Upload Certification</h2>
+        <section className="certs-card">
+          <h3>Upload Certification</h3>
+          <form onSubmit={handleUpload} className="certs-form">
+            <input
+              type="text"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
 
-      <form onSubmit={handleUpload}>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+            <input
+              type="text"
+              placeholder="Issuer"
+              value={issuer}
+              onChange={(e) => setIssuer(e.target.value)}
+            />
 
-        <input
-          type="text"
-          placeholder="Issuer"
-          value={issuer}
-          onChange={(e) => setIssuer(e.target.value)}
-        />
+            <input
+              type="file"
+              className="certs-file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files[0])}
+              required
+            />
 
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
+            <button type="submit">Upload</button>
+          </form>
+        </section>
 
-        <button type="submit">Upload</button>
-      </form>
+        <section className="certs-card certs-search-card">
+          <h3>Search Certifications</h3>
+          <div className="certs-search-form">
+            <div className="certs-search-row">
+              <input
+                type="text"
+                placeholder="Search certifications..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="certs-search-input"
+              />
+              <button
+                type="button"
+                onClick={performSearch}
+                disabled={isSearching}
+                className="btn-primary certs-search-btn"
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </button>
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="btn-secondary certs-clear-btn"
+              >
+                Clear
+              </button>
+            </div>
 
-      <hr />
+            <div className="certs-filters-row">
+              <label className="certs-filter-field">
+                <span className="certs-filter-label">Start Date</span>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={searchFilters.startDate}
+                  onChange={handleFilterChange}
+                />
+              </label>
 
-      <h2>Search Certifications</h2>
+              <label className="certs-filter-field">
+                <span className="certs-filter-label">End Date</span>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={searchFilters.endDate}
+                  onChange={handleFilterChange}
+                />
+              </label>
+            </div>
+          </div>
 
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Search certifications..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          style={{ marginRight: "10px", padding: "5px" }}
-        />
+          {isAdmin && (
+            <div className="certs-admin-filter">
+              <label className="certs-filter-field certs-filter-field-wide">
+                <span className="certs-filter-label">Filter by user</span>
+                <select
+                  value={adminUserFilter}
+                  onChange={(e) => setAdminUserFilter(e.target.value)}
+                >
+                  <option value="all">All Users</option>
+                  {adminUserOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+        </section>
 
-        <label style={{ marginRight: "10px" }}>
-          Start Date:
-          <input
-            type="date"
-            name="startDate"
-            value={searchFilters.startDate}
-            onChange={handleFilterChange}
-            style={{ marginLeft: "5px", padding: "5px" }}
-          />
-        </label>
+        <section className="certs-card certs-list-card">
+          <div className="certs-list-header">
+            <h3>{isAdmin ? "All Certifications" : "Your Certifications"}</h3>
+          </div>
 
-        <label style={{ marginRight: "10px" }}>
-          End Date:
-          <input
-            type="date"
-            name="endDate"
-            value={searchFilters.endDate}
-            onChange={handleFilterChange}
-            style={{ marginLeft: "5px", padding: "5px" }}
-          />
-        </label>
+          {displayedCerts.length === 0 && (
+            <p className="certs-empty">
+              {useSearch ? "No certifications match your search." : "No certifications uploaded."}
+            </p>
+          )}
 
-        <button
-          onClick={performSearch}
-          disabled={isSearching}
-          style={{ marginRight: "10px", padding: "5px 10px" }}
-        >
-          {isSearching ? "Searching..." : "Search"}
-        </button>
+          {displayedCerts.length > 0 && (
+            <div className="certs-list">
+              {displayedCerts.map((cert) => (
+                <article key={cert._id || cert.id} className="certs-item">
+                  <div className="certs-item-head">
+                    <h4 className="certs-item-title">{cert.title}</h4>
+                    <span className="certs-item-date">
+                      {formatDateAdded(cert.dateAdded || cert.createdAt)}
+                    </span>
+                  </div>
+                  <div className="certs-item-meta">
+                    <p>
+                      <strong>Issuer:</strong> {cert.issuer || "N/A"}
+                    </p>
+                    <p>
+                      <strong>User:</strong> {cert.userName || "Unknown User"}
+                    </p>
+                  </div>
 
-        <button
-          onClick={clearSearch}
-          style={{ padding: "5px 10px" }}
-        >
-          Clear
-        </button>
-      </div>
-
-      {isAdmin && (
-        <div style={{ marginBottom: "20px" }}>
-          <label>
-            Filter by user:
-            <select
-              value={adminUserFilter}
-              onChange={(e) => setAdminUserFilter(e.target.value)}
-              style={{ marginLeft: "10px", padding: "5px" }}
-            >
-              <option value="all">All Users</option>
-              {adminUserOptions.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.name}
-                </option>
+                  <div className="certs-item-actions">
+                    <a
+                      className="btn-secondary"
+                      href={`/api/certifications/${cert._id || cert.id}/file?token=${localStorage.getItem("token")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View PDF
+                    </a>
+                    <button
+                      type="button"
+                      className="certs-delete-btn"
+                      onClick={() => handleDelete(cert._id || cert.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
               ))}
-            </select>
-          </label>
-        </div>
-      )}
-
-      <hr />
-
-      <h2>{isAdmin ? "All Certifications" : "Your Certifications"}</h2>
-
-      {displayedCerts.length === 0 && (
-        <p>{useSearch ? "No certifications match your search." : "No certifications uploaded."}</p>
-      )}
-
-      {displayedCerts.map((cert) => (
-        <div
-          key={cert._id || cert.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px"
-          }}
-        >
-          <h3>{cert.title}</h3>
-          <p>Issuer: {cert.issuer || "N/A"}</p>
-          <p>User: {cert.userName || "Unknown User"}</p>
-          <p>Date Added: {formatDateAdded(cert.dateAdded || cert.createdAt)}</p>
-
-          <a
-            href={`/api/certifications/${cert._id || cert.id}/file?token=${localStorage.getItem("token")}`}
-            target="_blank"
-          >
-            View PDF
-          </a>
-
-          <br />
-
-          <button onClick={() => handleDelete(cert._id || cert.id)}>
-            Delete
-          </button>
-        </div>
-      ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

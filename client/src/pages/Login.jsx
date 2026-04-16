@@ -18,7 +18,7 @@ export default function Login() {
     try {
       const data = await loginUser({ email: form.email, password: form.password });
       localStorage.setItem("token", data.token);
-      navigate("/profile", { replace: true });
+      navigate("/home", { replace: true });
     } catch (err) {
       setError(err.message || "Login failed");
     }

@@ -390,10 +390,6 @@ export default function LogsPage() {
     return String(log.userId) === myUserId;
   }
 
-  function toggleTab() {
-    setActiveTab((prev) => (prev === "communication" ? "training" : "communication"));
-  }
-
   // Search functions
   function handleSearchChange(e) {
     setSearchQuery(e.target.value);
@@ -461,12 +457,6 @@ export default function LogsPage() {
                 <option value="training">Training Log</option>
               </select>
             </label>
-          </div>
-
-          <div className="logs-header-actions">
-            <button type="button" className="btn-secondary" onClick={toggleTab}>
-              {isCommunication ? "Training Logs" : "Communication Logs"}
-            </button>
           </div>
         </header>
 

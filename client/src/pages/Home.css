@@ -1,0 +1,144 @@
+.home-page {
+  width: 100%;
+  min-height: calc(100vh - 3.5rem);
+  background-color: #121212;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem 2rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.home-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.home-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.home-weather {
+  flex-shrink: 0;
+  background-color: #1d2d44;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  min-width: 140px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.home-weather-temp {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.home-weather-detail {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 0.35rem;
+  max-width: 220px;
+}
+
+.home-weather-meta {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 0.35rem;
+}
+
+.home-weather-loading,
+.home-weather-error {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.home-events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-event-card {
+  background-color: #1d2d44;
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  color: #ffffff;
+}
+
+.home-event-title-row {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.home-event-desc {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.45;
+}
+
+.home-event-meta {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 0.5rem;
+}
+
+.home-rsvp-heading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.4rem 0;
+}
+
+.home-rsvp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.home-rsvp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.home-rsvp-name {
+  font-weight: 500;
+}
+
+.home-rsvp-status {
+  flex-shrink: 0;
+  opacity: 0.95;
+}
+
+.home-empty {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.home-loading {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.home-error {
+  color: #e57373;
+  margin: 0 0 0.75rem 0;
+}

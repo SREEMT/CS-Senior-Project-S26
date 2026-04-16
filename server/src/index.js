@@ -5,17 +5,19 @@ import { dogRoutes } from "./routes/dog.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { authRoutes } from "./routes/auth.routes.js";
 import { certificationRoutes } from "./routes/certification.routes.js";
+import { documentRoutes } from "./routes/document.routes.js";
 import { commLogRoutes } from "./routes/commLog.routes.js";
 import { eventRoutes } from "./routes/event.routes.js";
 import { trainingLogRoutes } from "./routes/trainingLog.routes.js";
 import { searchRoutes } from "./routes/search.routes.js";
+import { weatherRoutes } from "./routes/weather.routes.js";
 
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: join(__dirname, "../../.env") });
+dotenv.config({ path: join(__dirname, "..", ".env") });
 
 // Current port for local development.
 // Will implement .env
@@ -36,10 +38,12 @@ serve({
             (await dogRoutes(req)) ??
             (await adminRoutes(req)) ??
             (await certificationRoutes(req)) ??
+            (await documentRoutes(req)) ??
             (await commLogRoutes(req)) ??
             (await eventRoutes(req)) ??
             (await trainingLogRoutes(req)) ??
             (await searchRoutes(req)) ??
+            (await weatherRoutes(req)) ??
             null;
         return res ?? new Response("Not Found", { status: 404 });
     }
