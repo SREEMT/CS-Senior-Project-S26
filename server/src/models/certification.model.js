@@ -1,11 +1,8 @@
 // model for certification managing feature
 
 // import necessary mongodb functions
-import { createDeflate } from "zlib";
 import { connectDB } from "../config/db.js";
 import { ObjectId, GridFSBucket } from "mongodb";        //Gridfs is needed to store pdfs in mongodb and allows file streaming
-import { file } from "bun";
-import { resolve } from "dns";
 
 // Certification schema definition
 const certificationSchema = {
@@ -21,6 +18,55 @@ const certificationSchema = {
 async function collection() {
     const conn = await connectDB();
     return conn.db.collection("certifications");
+}
+
+function toObjectId(value) {
+    if (!value) return value;
+    if (ObjectId.isValid(value)) return new ObjectId(value.toString());
+    return value;
+}
+
+function certificationAggregatePipeline(match = null) {
+    const pipeline = [];
+
+    if (match) {
+        pipeline.push({ $match: match });
+    }
+
+    pipeline.push(
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+        {
+            $unwind: {
+                path: "$user",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $addFields: {
+                userName: "$user.name",
+                dateAdded: "$createdAt"
+            }
+        },
+        {
+            $project: {
+                user: 0
+            }
+        },
+        {
+            $sort: {
+                createdAt: -1
+            }
+        }
+    );
+
+    return pipeline;
 }
 
 // Certification data validation
@@ -65,8 +111,15 @@ export async function createCertification(data) {
 export async function findCertsByUser(userId) {
     const coll = await collection();
     return coll
-        .find({ userId: new ObjectId(userId.toString()) })
-        .sort({ createdAt: -1 })
+        .aggregate(certificationAggregatePipeline({ userId: toObjectId(userId) }))
+        .toArray();
+}
+
+// export admin find all certs
+export async function findAllCerts() {
+    const coll = await collection();
+    return coll
+        .aggregate(certificationAggregatePipeline())
         .toArray();
 }
 
@@ -141,5 +194,3 @@ export async function uploadCertFile(filename, buffer) {
 }
 
 export{ certificationSchema };
-
-// Admin find all certs (implement later)

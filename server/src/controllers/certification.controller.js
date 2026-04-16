@@ -131,6 +131,7 @@ export async function deleteCertificationController(req, { params }) {
 export async function streamCertificationFileController(req, { params }) {
     try {
         const cert = await findCertById(params.id);
+        const authUserId = req.user?.id?.toString?.() ?? req.user?._id?.toString?.();
 
         if (!cert) {
             return new Response(
@@ -139,7 +140,14 @@ export async function streamCertificationFileController(req, { params }) {
             );
         }
 
-        if (req.user.role !== "admin" && cert.userId.toString() !== req.user.id) {
+        if (!authUserId) {
+            return new Response(
+                JSON.stringify({ error: "Unauthorized" }),
+                { status: 401 }
+            );
+        }
+
+        if (req.user.role !== "admin" && cert.userId.toString() !== authUserId) {
             return new Response(
                 JSON.stringify({ error: "Forbidden" }),
                 { status: 403 }

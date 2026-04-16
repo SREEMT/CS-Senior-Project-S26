@@ -1,16 +1,14 @@
-export function buildSort({ sortBy, hasQuery }) {
-    if (hasQuery) {
-        return { score: { $meta: "textScore" } };
-    }
+export function buildSort({ sortBy } = {}) {
+    const normalized = String(sortBy || "").toLowerCase();
 
-    if (sortBy === "oldest") {
+    if (normalized === "oldest") {
         return { createdAt: 1 };
     }
 
-    if (sortBy === "updatedAt") {
+    if (normalized === "updatedat") {
         return { updatedAt: -1 };
     }
 
-    // Default to recent (newest first)
+    // Default to latest/recent first.
     return { createdAt: -1 };
 }

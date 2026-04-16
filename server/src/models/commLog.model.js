@@ -126,10 +126,8 @@ export async function createCommLog(data) {
     return obj;
 }
 
-// Find Logs by event
-export async function findLogByEvent(eventId) {
-    const query = eventId ? { eventId } : {};
-
+// Find logs by an arbitrary query
+export async function findLogs(query = {}) {
     const logs = await CommunicationLog.find(query)
         .populate("userId", "name")
         .sort({ createdAt: -1 })
@@ -144,6 +142,12 @@ export async function findLogByEvent(eventId) {
         id: l._id.toString(),
         _id: undefined,
     }));
+}
+
+// Backward-compatible helper when callers only have eventId.
+export async function findLogByEvent(eventId) {
+    const query = eventId ? { eventId } : {};
+    return findLogs(query);
 }
 
 // Find log by Id

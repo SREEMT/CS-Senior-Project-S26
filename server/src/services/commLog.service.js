@@ -1,6 +1,6 @@
 import {
     createCommLog,
-    findLogByEvent,
+    findLogs,
     findLogById,
     deleteCommLog,
 } from "../models/commLog.model.js";
@@ -24,8 +24,20 @@ export async function logComm(user, data) {
     });
 }
 
-export async function getEventComm(eventId) {
-    return await findLogByEvent(eventId);
+export async function getEventComm(user, eventId) {
+    if (!user?._id) throw new Error("Unauthorized");
+
+    const query = {};
+    if (eventId) {
+        query.eventId = eventId;
+    }
+
+    // Non-admin users can only retrieve their own communication logs.
+    if (user.role !== "admin") {
+        query.userId = user._id;
+    }
+
+    return await findLogs(query);
 }
 
 export async function deleteComm(user, logId) {
@@ -35,8 +47,8 @@ export async function deleteComm(user, logId) {
         throw new Error("Log not found");
     }
 
-    // Only allow users to delete their own communication logs.
-    if (log.userId?.toString() !== user._id?.toString()) {
+    // Users can delete their own logs; admins can delete any log.
+    if (user.role !== "admin" && log.userId?.toString() !== user._id?.toString()) {
         throw new Error("Unauthorized");
     }
 

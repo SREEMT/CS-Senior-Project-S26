@@ -9,13 +9,15 @@ export async function searchController(req) {
 
         const filters = {
             type: url.searchParams.get("type"),         // training_log, communication_log, or certification
-            logType: url.searchParams.get("logType") || url.searchParams.get("radio"),   // comm log subtype
-            sortBy: url.searchParams.get("sortBy"),     // recent, oldest, or updatedAt
+            sortBy: url.searchParams.get("sortBy"),     // latest, oldest, or updatedAt
             startDate: url.searchParams.get("startDate"),
-            endDate: url.searchParams.get("endDate")
+            endDate: url.searchParams.get("endDate"),
+            dogId: url.searchParams.get("dogId"),
+            eventId: url.searchParams.get("eventId"),
+            userId: url.searchParams.get("userId")
         };
 
-        const results = await searchAll({ query, filters });
+        const results = await searchAll({ query, filters, user: req.user });
 
         return new Response(JSON.stringify({ results }), {
             status: 200,

@@ -21,12 +21,18 @@ export async function createLogController(req) {
 
 // Get logs to view, called by routes
 export async function getEventLogsController(req) {
-    const url = new URL(req.url);
-    const eventId = url.searchParams.get("eventId");
-
-    const logs = await getEventComm(eventId);
-
-    return Response.json(logs);
+    try {
+        const url = new URL(req.url);
+        const eventId = url.searchParams.get("eventId");
+        const logs = await getEventComm(req.user, eventId);
+        return Response.json(logs);
+    } catch (err) {
+        const status = err.message === "Unauthorized" ? 403 : 400;
+        return new Response(JSON.stringify({ error: err.message }), {
+            status,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
 }
 
 // Delete a log controller, called by routes

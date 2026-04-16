@@ -12,8 +12,8 @@ import {
   deleteTrainingLog,
   getMyTrainingLogs,
 } from "../services/trainingLogs.js";
-import { searchItems } from "../services/search.js";
 import { getToken } from "../services/auth.js";
+import { searchItems } from "../services/search.js";
 import "./LogsPage.css";
 
 function formatTimestamp(ts) {
@@ -83,10 +83,11 @@ export default function LogsPage() {
     startDate: "",
     endDate: "",
     dogId: "",
+    logType: "",
   });
-  const [searchSort, setSearchSort] = useState("latest");
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [useSearch, setUseSearch] = useState(false);
 
   const activeHeaderTitle = useMemo(() => {
     if (isCommunication) return "Communication Logs";
@@ -279,31 +280,37 @@ export default function LogsPage() {
   }
 
   // Search functions
+  async function performSearch() {
+    if (!searchQuery.trim() && !searchFilters.startDate && !searchFilters.endDate && !searchFilters.dogId && !searchFilters.logType) {
+      setUseSearch(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const filters = {
+        ...searchFilters,
+        type: isCommunication ? "communication_log" : "training_log",
+      };
+
+      const results = await searchItems({ query: searchQuery, filters });
+      setSearchResults(results);
+      setUseSearch(true);
+    } catch (err) {
+      console.error("Search failed:", err);
+      setUseSearch(false);
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
   function handleSearchChange(e) {
     setSearchQuery(e.target.value);
   }
 
   function handleFilterChange(e) {
     const { name, value } = e.target;
-    setSearchFilters((prev) => ({ ...prev, [name]: value }));
-  }
-
-  async function performSearch(sortOverride = searchSort) {
-    setIsSearching(true);
-    try {
-      const filters = {
-        ...searchFilters,
-        type: isCommunication ? "communication_log" : "training_log",
-        sortBy: sortOverride,
-      };
-
-      const results = await searchItems({ query: searchQuery, filters });
-      setSearchResults(results);
-    } catch (err) {
-      alert(err.message || "Search failed");
-    } finally {
-      setIsSearching(false);
-    }
+    setSearchFilters(prev => ({ ...prev, [name]: value }));
   }
 
   function clearSearch() {
@@ -312,19 +319,26 @@ export default function LogsPage() {
       startDate: "",
       endDate: "",
       dogId: "",
+      logType: "",
     });
-    setSearchSort("latest");
-    setSearchResults(null);
+    setUseSearch(false);
+    setSearchResults([]);
   }
 
-  function toggleSortOrder() {
-    const nextSort = searchSort === "latest" ? "oldest" : "latest";
-    setSearchSort(nextSort);
-
-    if (searchResults !== null) {
-      void performSearch(nextSort);
+  // Get filtered logs based on search or all logs
+  const displayedCommLogs = useMemo(() => {
+    if (useSearch && isCommunication) {
+      return searchResults.filter(r => r.type === "communication_log");
     }
-  }
+    return commLogs;
+  }, [useSearch, isCommunication, searchResults, commLogs]);
+
+  const displayedTrainingLogs = useMemo(() => {
+    if (useSearch && !isCommunication) {
+      return searchResults.filter(r => r.type === "training_log");
+    }
+    return trainingLogs;
+  }, [useSearch, isCommunication, searchResults, trainingLogs]);
 
   return (
     <>
@@ -391,41 +405,13 @@ export default function LogsPage() {
 
               {commLoading ? (
                 <p className="logs-loading">Loading...</p>
-              ) : searchResults && isCommunication ? (
-                searchResults.length === 0 ? (
-                  <p className="logs-empty">No matching communication logs found.</p>
-                ) : (
-                  <div className="logs-list">
-                    {searchResults.map((log) => (
-                      <div key={log.id} className="logs-item">
-                        <div className="logs-item-meta">
-                          <span className="logs-item-author">{log.userName}</span>
-                          <span className="logs-item-timestamp">
-                            {formatTimestamp(log.createdAt)}
-                          </span>
-                        </div>
-                        <div className="logs-item-title">{log.title}</div>
-                        <div className="logs-item-body">{log.body}</div>
-                        <div className="logs-item-actions">
-                          {myUserId && log.userId && String(log.userId) === myUserId && (
-                            <button
-                              type="button"
-                              className="logs-delete-btn"
-                              onClick={() => handleDeleteCommunication(log.id)}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              ) : commLogs.length === 0 ? (
-                <p className="logs-empty">No communication logs yet.</p>
+              ) : displayedCommLogs.length === 0 ? (
+                <p className="logs-empty">
+                  {useSearch ? "No communication logs match your search." : "No communication logs yet."}
+                </p>
               ) : (
                 <div className="logs-list">
-                  {commLogs.map((log) => (
+                  {displayedCommLogs.map((log) => (
                     <div key={log.id} className="logs-item">
                       <div className="logs-item-meta">
                         <span className="logs-item-author">{log.userName}</span>
@@ -564,55 +550,13 @@ export default function LogsPage() {
 
               {trainingLoading ? (
                 <p className="logs-loading">Loading...</p>
-              ) : searchResults && !isCommunication ? (
-                searchResults.length === 0 ? (
-                  <p className="logs-empty">No matching training logs found.</p>
-                ) : (
-                  <div className="logs-list">
-                    {searchResults.map((log) => (
-                      <div key={log.id} className="logs-item">
-                        <div className="logs-item-meta">
-                          <span className="logs-item-author">
-                            {log.dogName ||
-                              (dogs.find((d) => d.id === log.dogId)?.name ?? "") ||
-                              "Unknown Dog"}
-                          </span>
-                          <span className="logs-item-timestamp">
-                            {formatTimestamp(log.createdAt)}
-                          </span>
-                        </div>
-                        <div className="logs-item-body">
-                          <div>
-                            <strong>Date:</strong> {log.date}
-                          </div>
-                          <div>
-                            <strong>Location:</strong> {log.location}
-                          </div>
-                          <div>
-                            <strong>Time:</strong> {log.time}
-                          </div>
-                          <div>
-                            <strong>Start - Stop:</strong> {log.startTime} - {log.stopTime}
-                          </div>
-                        </div>
-                        <div className="logs-item-actions">
-                          <button
-                            type="button"
-                            className="logs-delete-btn"
-                            onClick={() => handleDeleteTraining(log.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              ) : trainingLogs.length === 0 ? (
-                <p className="logs-empty">No training logs yet.</p>
+              ) : displayedTrainingLogs.length === 0 ? (
+                <p className="logs-empty">
+                  {useSearch ? "No training logs match your search." : "No training logs yet."}
+                </p>
               ) : (
                 <div className="logs-list">
-                  {trainingLogs.map((log) => (
+                  {displayedTrainingLogs.map((log) => (
                     <div key={log.id} className="logs-item">
                       <div className="logs-item-meta">
                         <span className="logs-item-author">
@@ -653,7 +597,6 @@ export default function LogsPage() {
               )}
             </section>
           </>
-        )}
         {/* Search Section */}
         <section className="logs-card logs-search-card">
           <h3>Search {isCommunication ? "Communication" : "Training"} Logs</h3>
@@ -668,7 +611,7 @@ export default function LogsPage() {
               />
               <button
                 type="button"
-                onClick={() => void performSearch()}
+                onClick={performSearch}
                 disabled={isSearching}
                 className="btn-primary logs-search-btn"
               >
@@ -680,13 +623,6 @@ export default function LogsPage() {
                 className="btn-secondary logs-clear-btn"
               >
                 Clear
-              </button>
-              <button
-                type="button"
-                onClick={toggleSortOrder}
-                className="btn-secondary logs-clear-btn"
-              >
-                Sort: {searchSort === "latest" ? "Latest" : "Oldest"}
               </button>
             </div>
 
@@ -729,10 +665,27 @@ export default function LogsPage() {
                 </label>
               )}
 
+              {isCommunication && (
+                <label className="logs-filter-field">
+                  <span className="logs-filter-label">Log Type</span>
+                  <select
+                    name="logType"
+                    value={searchFilters.logType}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="">All Types</option>
+                    <option value="general">General</option>
+                    <option value="incident">Incident</option>
+                    <option value="training">Training</option>
+                    <option value="medical">Medical</option>
+                  </select>
+                </label>
+              )}
             </div>
           </div>
         </section>
 
+        )}
         </div>
       </div>
     </>
